@@ -14,7 +14,7 @@ export default function GovernmentDashboard({ currentUser, navigateTo }) {
   // Government Live Grievance Database
   const [grievances, setGrievances] = useState([
     {
-      id: "INP-2026-9401",
+      id: "UP-GND-2026-9401",
       title: "Severe Road Cave-in & Pothole Cluster after Heavy Rains",
       description: "Multiple 2-ft craters across a 500m arterial segment causing critical vehicle damage and gridlock.",
       category: "Roads & Infrastructure",
@@ -25,12 +25,12 @@ export default function GovernmentDashboard({ currentUser, navigateTo }) {
       timestamp: "35 mins ago",
       upvotes: 68,
       aiConfidence: 97,
-      slaRemaining: "4 hrs (Critical SLA)",
+      slaRemaining: "4 hrs (Emergency SLA)",
       assignedOfficer: "Er. S.K. Sharma (EE, PWD)",
       aiTags: ["High Accident Probability", "Multi-Vehicle Impact", "Asphalt Failure"]
     },
     {
-      id: "INP-2026-9388",
+      id: "UP-GND-2026-9388",
       title: "Main 600mm Drinking Water Pipeline Burst",
       description: "Pressurized clean water gushing onto the road. Over 1,200 households reporting total loss of water supply.",
       category: "Water Supply",
@@ -42,11 +42,11 @@ export default function GovernmentDashboard({ currentUser, navigateTo }) {
       upvotes: 94,
       aiConfidence: 99,
       slaRemaining: "3 hrs (Emergency SLA)",
-      assignedOfficer: "A.K. Srivastava (AE, Jal Nigam)",
+      assignedOfficer: "Er. A.K. Srivastava (AE, Jal Nigam)",
       aiTags: ["Resource Wastage", "Household Disruption", "Sub-surface Erosion"]
     },
     {
-      id: "INP-2026-9352",
+      id: "UP-GND-2026-9352",
       title: "Commercial 11kV Transformer Overheating & Sparking",
       description: "Severe audible buzzing and smoke plumes from pole-mounted transformer during peak evening load.",
       category: "Electricity",
@@ -62,7 +62,7 @@ export default function GovernmentDashboard({ currentUser, navigateTo }) {
       aiTags: ["Fire Hazard Risk", "High Tension Line", "Commercial Zone"]
     },
     {
-      id: "INP-2026-9290",
+      id: "UP-GND-2026-9290",
       title: "Illegal Solid Waste Dumping & Open Burning",
       description: "Unregulated industrial plastic scrap dumped along vacant plot. Strong toxic smoke drifting into residential sector.",
       category: "Sanitation & Environment",
@@ -78,7 +78,7 @@ export default function GovernmentDashboard({ currentUser, navigateTo }) {
       aiTags: ["Air Quality Index Impact", "Pollution Control Board Violation"]
     },
     {
-      id: "INP-2026-9211",
+      id: "UP-GND-2026-9211",
       title: "Primary Stormwater Drain Blocked by Construction Debris",
       description: "Concrete slag and plastic clogging culvert. Silt level at 85% capacity ahead of forecasted monsoon rain.",
       category: "Drainage & Flood Control",
@@ -94,576 +94,538 @@ export default function GovernmentDashboard({ currentUser, navigateTo }) {
       aiTags: ["Predictive Flood Risk", "Traffic Arterial Choke"]
     },
     {
-      id: "INP-2026-9145",
+      id: "UP-GND-2026-9145",
       title: "Cluster of 18 Non-Functional LED Streetlights",
       description: "Continuous 1.2km stretch completely unlit, creating blind spots for nighttime cyclists and pedestrians.",
       category: "Street Lighting",
-      department: "GNIDA Electrical",
+      department: "NPCL Power",
       severity: "medium",
-      status: "resolved",
-      location: "Beta 1 Institutional Greenway",
-      timestamp: "Yesterday",
-      upvotes: 27,
-      aiConfidence: 93,
-      slaRemaining: "Resolved in 18 hrs",
-      assignedOfficer: "Mukesh Tiwari (Electrical Cell)",
-      aiTags: ["Public Safety", "Smart City LED Grid"]
+      status: "triaged",
+      location: "Sector Beta 1 Inner Ring Road",
+      timestamp: "9 hours ago",
+      upvotes: 29,
+      aiConfidence: 94,
+      slaRemaining: "20 hrs",
+      assignedOfficer: "Sunil Tyagi (Electrical AE)",
+      aiTags: ["Public Safety", "Night Commute Hazard"]
     }
   ]);
 
-  // Predictive Governance AI Models
-  const predictiveForecasts = [
-    {
-      id: "PRED-01",
-      hazard: "Pre-Monsoon Urban Waterlogging Risk",
-      probability: "94% Certainty",
-      severity: "critical",
-      zone: "Pari Chowk & Expressway Underpass",
-      leadTime: "3 Days ahead of Rain Forecast",
-      rationale: "Historical AI spatial correlation shows 5 drain chokes in 200m radius with 85% silt capacity. Expected rainfall >45mm will cause 1.5ft water accumulation.",
-      preventiveAction: "Dispatch High-Capacity Super Sucker Drain Cleaning Vehicle",
-      actionStatus: "pending"
-    },
-    {
-      id: "PRED-02",
-      hazard: "Grid Transformer Overload & Failure Risk",
-      probability: "88% Certainty",
-      severity: "high",
-      zone: "Alpha 1 Commercial Center",
-      leadTime: "Next 48 Hours during 6-9 PM Peak",
-      rationale: "Sensor telemetry and complaint clustering show 123% peak load recurrence with thermal sensor alerts.",
-      preventiveAction: "Phase Load Balancing & Auxiliary Substation Rerouting",
-      actionStatus: "pending"
-    },
-    {
-      id: "PRED-03",
-      hazard: "Pothole Clustering & Structural Base Collapse",
-      probability: "81% Certainty",
-      severity: "high",
-      zone: "Knowledge Park III Heavy Vehicle Lane",
-      leadTime: "Within 5-7 Days",
-      rationale: "Micro-fissures and heavy container truck density indicate imminent asphalt layer collapse.",
-      preventiveAction: "Cold-Mix Bitumen Resurfacing & Heavy Vehicle Speed Control",
-      actionStatus: "pending"
-    }
-  ];
-
-  // Department SLA Matrix
-  const departmentStats = [
-    { name: "Public Works Department (PWD)", active: 184, resolved: 890, slaRate: "94.2%", avgTime: "2.8 Days", head: "Er. S.K. Sharma" },
-    { name: "UP Jal Nigam (Water & Sewerage)", active: 215, resolved: 742, slaRate: "88.6%", avgTime: "3.4 Days", head: "Er. V.K. Singh" },
-    { name: "NPCL State Power Distribution", active: 94, resolved: 980, slaRate: "97.1%", avgTime: "1.2 Days", head: "Er. R.K. Gupta" },
-    { name: "GNIDA Solid Waste Management", active: 142, resolved: 1120, slaRate: "91.8%", avgTime: "1.9 Days", head: "Dr. Vinod Pathak" }
-  ];
-
-  // Handle status update
   const handleStatusChange = (id, newStatus) => {
     setGrievances((prev) =>
       prev.map((g) => (g.id === id ? { ...g, status: newStatus } : g))
     );
   };
 
-  // Filtered grievances for triage
-  const filteredGrievances = grievances.filter((item) => {
-    if (filterDept !== "all" && item.department !== filterDept) return false;
-    if (filterSeverity !== "all" && item.severity !== filterSeverity) return false;
-    return true;
-  });
-
-  const handleDeployPreventive = (forecast) => {
-    setActiveAlertNotification(`Preventive Action Dispatched: ${forecast.preventiveAction} sent to ${forecast.zone}!`);
-    setTimeout(() => setActiveAlertNotification(null), 4000);
+  const handleDispatchEmergencySquad = (issue) => {
+    setActiveAlertNotification(`Emergency Field Maintenance Squad successfully dispatched to ${issue.location} for ${issue.id}. Notification broadcasted to Nodal Engineer.`);
+    setTimeout(() => setActiveAlertNotification(null), 5000);
   };
 
+  const filteredGrievances = grievances.filter((g) => {
+    const matchDept = filterDept === "all" || g.department.toLowerCase().includes(filterDept.toLowerCase());
+    const matchSev = filterSeverity === "all" || g.severity.toLowerCase() === filterSeverity.toLowerCase();
+    return matchDept && matchSev;
+  });
+
   return (
-    <div className="dashboard-layout gov-layout">
-      {/* Sidebar Navigation */}
-      <Sidebar
-        role="admin"
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        pendingCount={grievances.filter((g) => g.status === "submitted" || g.status === "triaged").length}
-      />
-
-      {/* Main Command Center Content */}
-      <main className="dashboard-main-content">
-        {/* Top Header */}
-        <header className="dashboard-header gov-dashboard-header">
-          <div>
-            <div className="gov-title-badge">
-              <span>🏛️</span> GOVERNMENT OF UTTAR PRADESH • GREATER NOIDA AUTHORITY
+    <div className="gov-dashboard-wrapper officer-dashboard-wrapper">
+      {/* Official Government Officer Header Strip */}
+      <div className="gov-dash-header-strip officer-header-strip">
+        <div className="gov-container dash-header-inner">
+          <div className="dash-header-left">
+            <span className="gov-emblem-icon">🏛️</span>
+            <div>
+              <div className="dash-sub">
+                DISTRICT ADMINISTRATION • GREATER NOIDA METROPOLIS
+              </div>
+              <h2 className="dash-title">
+                Executive Grievance Command Console (अधिकारी नियंत्रण कक्ष)
+              </h2>
             </div>
-            <h2>Civic Intelligence Command Center</h2>
-            <p className="header-subtitle">
-              Logged in as: <strong>{currentUser?.name || "Dr. Rajesh Mehta, IAS"}</strong> ({currentUser?.designation || "District Magistrate"}) • Live AI Triaging Active
-            </p>
           </div>
 
-          <div className="header-actions">
-            <button className="gov-broadcast-btn" onClick={() => setActiveTab("predictive")}>
-              ⚡ View Predictive Alerts (3)
-            </button>
-          </div>
-        </header>
-
-        {activeAlertNotification && (
-          <div className="gov-alert-toast">
-            <span className="toast-icon">🚀</span>
-            <span>{activeAlertNotification}</span>
-          </div>
-        )}
-
-        {/* =========================================================
-            TAB 1: COMMAND OVERVIEW
-        ========================================================= */}
-        {activeTab === "overview" && (
-          <div className="dashboard-view-fade">
-            {/* Top KPI Metrics Bar */}
-            <div className="dashboard-stats-grid gov-stats-grid">
-              <StatCard
-                title="Active Grievances"
-                value="1,284"
-                subtitle="Triaged across 18 municipal zones"
-                icon="📊"
-                trend="12% resolved this week"
-                trendPositive={true}
-                variant="default"
-              />
-              <StatCard
-                title="Critical Emergency Alerts"
-                value={grievances.filter((g) => g.severity === "critical").length.toString()}
-                subtitle="Life safety / infrastructure risk"
-                icon="🚨"
-                trend="Requires Immediate Officer Action"
-                trendPositive={false}
-                variant="critical"
-              />
-              <StatCard
-                title="AI Auto-Routing Accuracy"
-                value="98.4%"
-                subtitle="NLP & Computer Vision triaging"
-                icon="🎯"
-                trend="+3.2% precision"
-                trendPositive={true}
-                variant="success"
-              />
-              <StatCard
-                title="SLA Compliance Rate"
-                value="93.8%"
-                subtitle="Avg resolution: 2.9 days"
-                icon="⚡"
-                trend="6% better than target"
-                trendPositive={true}
-                variant="purple"
-              />
+          <div className="dash-header-right">
+            <div className="officer-badge-box">
+              <span className="officer-icon">🎖️</span>
+              <div className="officer-info">
+                <strong className="officer-name">{currentUser?.name || "Dr. Rajesh Mehta, IAS"}</strong>
+                <span className="officer-meta">
+                  {currentUser?.designation || "District Magistrate & Municipal Commissioner"} &bull;{" "}
+                  <span className="clearance-badge">{currentUser?.clearanceLevel || "Level 1 Executive"}</span>
+                </span>
+              </div>
             </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Split Section: GIS Map & High Urgency Triage Feed */}
-            <div className="gov-overview-split">
-              <div className="gov-map-panel">
-                <div className="card-header-bar">
-                  <div>
-                    <h3>🗺️ Live GIS Hotspot & Geospatial Cluster</h3>
-                    <p className="card-subtitle">Real-time incident clustering with predictive failure heat zones</p>
-                  </div>
-                  <button className="text-btn" onClick={() => setActiveTab("heatmap")}>
-                    Expand Full GIS →
-                  </button>
-                </div>
+      {activeAlertNotification && (
+        <div className="gov-alert-banner">
+          <span>⚡ {activeAlertNotification}</span>
+        </div>
+      )}
 
-                <MapView
-                  issues={grievances}
-                  onSelectIssue={(iss) => setSelectedIssue(iss)}
+      <div className="gov-container dash-layout">
+        {/* Left Sidebar */}
+        <Sidebar
+          role="admin"
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          pendingCount={grievances.filter((g) => g.status !== "resolved").length}
+        />
+
+        {/* Right Main Content Area */}
+        <div className="dash-main-pane">
+          {/* TAB 1: EXECUTIVE COMMAND OVERVIEW */}
+          {activeTab === "overview" && (
+            <div className="dash-tab-content">
+              {/* Top Officer Stat Row */}
+              <div className="dash-stats-row">
+                <StatCard
+                  title="Total Active Grievances"
+                  value="1,428"
+                  subtitle="Under current jurisdiction"
+                  icon="📋"
+                  trend="14 new in last 1 hr"
+                  trendPositive={false}
+                />
+                <StatCard
+                  title="Emergency Life-Safety Cases"
+                  value="12"
+                  subtitle="Assigned to Nodal Engineers"
+                  icon="🚨"
+                  trend="Statutory SLA < 6 Hrs"
+                  trendPositive={false}
+                  variant="warning"
+                />
+                <StatCard
+                  title="24-Hr Disposal Rate"
+                  value="94.2%"
+                  subtitle="SLA compliant resolution"
+                  icon="⚡"
+                  trend="Above State Target (90%)"
+                  trendPositive={true}
+                  variant="success"
+                />
+                <StatCard
+                  title="Predictive Alerts Active"
+                  value="6 Hotspots"
+                  subtitle="Monsoon silt & transformer load"
+                  icon="🧠"
+                  trend="Pre-emptive action ordered"
+                  trendPositive={true}
+                  variant="purple"
                 />
               </div>
 
-              <div className="gov-critical-panel">
-                <div className="card-header-bar">
+              {/* Critical Attention Banner */}
+              <div className="gov-critical-callout">
+                <div className="critical-header">
+                  <span className="crit-icon">⚠️</span>
                   <div>
-                    <h3>🚨 Immediate Action Queue</h3>
-                    <p className="card-subtitle">Critical AI severity items with active SLA timers</p>
+                    <h4>IMMEDIATE ACTION REQUIRED: 3 Critical SLA Breaches Pending</h4>
+                    <p>Knowledge Park III road cave-in and Gamma 2 pipeline burst require immediate executive clearance.</p>
+                  </div>
+                </div>
+                <button className="gov-btn-emergency" onClick={() => setActiveTab("triage")}>
+                  Open Priority Triage Queue →
+                </button>
+              </div>
+
+              {/* Department Performance Summary Table */}
+              <div className="gov-card dash-card">
+                <div className="dash-card-header">
+                  <div className="card-title-group">
+                    <span className="card-icon">🏢</span>
+                    <div>
+                      <h3>Inter-Departmental SLA Compliance Scorecard</h3>
+                      <p>Real-time disposal tracking across all 5 participating statutory departments</p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="critical-issues-scroll">
-                  {grievances
-                    .filter((g) => g.severity === "critical")
-                    .map((item) => (
-                      <IssueCard
-                        key={item.id}
-                        issue={item}
-                        showAdminActions={true}
-                        onStatusChange={handleStatusChange}
-                        onSelect={(iss) => setSelectedIssue(iss)}
-                      />
-                    ))}
+                <div className="charter-table-responsive">
+                  <table className="gov-data-table">
+                    <thead>
+                      <tr>
+                        <th>Department</th>
+                        <th>Nodal Executive Officer</th>
+                        <th>Active Load</th>
+                        <th>Disposed (24h)</th>
+                        <th>SLA Compliance</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>Public Works Dept (PWD)</strong></td>
+                        <td>Er. S.K. Sharma (Chief EE)</td>
+                        <td>342</td>
+                        <td>48</td>
+                        <td><span className="badge-pill pill-green">96.8%</span></td>
+                        <td><button className="text-btn" onClick={() => { setFilterDept("PWD"); setActiveTab("triage"); }}>View Queue</button></td>
+                      </tr>
+                      <tr>
+                        <td><strong>UP Jal Nigam (Water & Drainage)</strong></td>
+                        <td>Er. A.K. Srivastava (SE)</td>
+                        <td>289</td>
+                        <td>39</td>
+                        <td><span className="badge-pill pill-amber">91.2%</span></td>
+                        <td><button className="text-btn" onClick={() => { setFilterDept("Jal"); setActiveTab("triage"); }}>View Queue</button></td>
+                      </tr>
+                      <tr>
+                        <td><strong>NPCL State Power Distribution</strong></td>
+                        <td>R.K. Gupta (Divisional Eng)</td>
+                        <td>194</td>
+                        <td>62</td>
+                        <td><span className="badge-pill pill-green">98.1%</span></td>
+                        <td><button className="text-btn" onClick={() => { setFilterDept("NPCL"); setActiveTab("triage"); }}>View Queue</button></td>
+                      </tr>
+                      <tr>
+                        <td><strong>GNIDA Sanitation & Solid Waste</strong></td>
+                        <td>Dr. Vinod Pathak (CSO)</td>
+                        <td>412</td>
+                        <td>88</td>
+                        <td><span className="badge-pill pill-green">94.5%</span></td>
+                        <td><button className="text-btn" onClick={() => { setFilterDept("Sanitation"); setActiveTab("triage"); }}>View Queue</button></td>
+                      </tr>
+                      <tr>
+                        <td><strong>Traffic & Mobility Police Cell</strong></td>
+                        <td>ACP Traffic HQ</td>
+                        <td>191</td>
+                        <td>24</td>
+                        <td><span className="badge-pill pill-green">97.0%</span></td>
+                        <td><button className="text-btn" onClick={() => { setFilterDept("Traffic"); setActiveTab("triage"); }}>View Queue</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
+          )}
 
-            {/* Predictive Governance Teaser Banner */}
-            <div className="predictive-banner-card" onClick={() => setActiveTab("predictive")}>
-              <div className="predictive-banner-content">
-                <div className="pred-tag">🧠 AI PREDICTIVE CIVIC DEFENSE ACTIVE</div>
-                <h3>3 High-Probability Infrastructure Hazards Forecasted for Greater Noida</h3>
-                <p>
-                  IN-PACT AI detected an upcoming drain choke risk at Pari Chowk underpass and an 11kV transformer stress in Alpha 1. Take preventive action before citizens experience failures.
-                </p>
-              </div>
-              <button className="predictive-action-btn">
-                Launch Predictive Action Center →
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* =========================================================
-            TAB 2: GRIEVANCE TRIAGE
-        ========================================================= */}
-        {activeTab === "triage" && (
-          <div className="dashboard-view-fade">
-            <div className="triage-toolbar">
-              <div className="triage-filters">
-                <div className="filter-item">
-                  <label htmlFor="deptFilter">Filter Department:</label>
-                  <select
-                    id="deptFilter"
-                    className="filter-select"
-                    value={filterDept}
-                    onChange={(e) => setFilterDept(e.target.value)}
-                  >
-                    <option value="all">All Departments (1,284)</option>
-                    <option value="PWD">Public Works Department (PWD)</option>
-                    <option value="UP Jal Nigam">UP Jal Nigam (Water & Drainage)</option>
-                    <option value="NPCL Power">NPCL Power & Distribution</option>
-                    <option value="GNIDA Sanitation">GNIDA Sanitation & Waste</option>
-                  </select>
-                </div>
-
-                <div className="filter-item">
-                  <label htmlFor="severityFilter">AI Severity:</label>
-                  <select
-                    id="severityFilter"
-                    className="filter-select"
-                    value={filterSeverity}
-                    onChange={(e) => setFilterSeverity(e.target.value)}
-                  >
-                    <option value="all">All Severities</option>
-                    <option value="critical">🚨 Critical Only</option>
-                    <option value="high">⚠️ High</option>
-                    <option value="medium">🟡 Moderate</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="triage-quick-stats">
-                Showing <strong>{filteredGrievances.length}</strong> active grievances
-              </div>
-            </div>
-
-            <div className="grievance-cards-grid">
-              {filteredGrievances.map((item) => (
-                <div key={item.id} className="gov-triage-card-wrapper">
-                  <IssueCard
-                    issue={item}
-                    showAdminActions={true}
-                    onStatusChange={handleStatusChange}
-                    onSelect={(iss) => setSelectedIssue(iss)}
-                  />
-                  <div className="triage-officer-bar">
-                    <span>👤 Assigned: <strong>{item.assignedOfficer || "Auto-Allocated to On-Duty Engineer"}</strong></span>
-                    <span className="ai-sla-pill">⏳ {item.slaRemaining}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* =========================================================
-            TAB 3: GIS HEATMAP & GEO
-        ========================================================= */}
-        {activeTab === "heatmap" && (
-          <div className="dashboard-view-fade">
-            <div className="view-heading-bar">
-              <div>
-                <h3>Geographic Information System (GIS) Intelligence Grid</h3>
-                <p>Real-time spatial mapping, recurring complaint clusters, and municipal ward heatmaps.</p>
-              </div>
-            </div>
-
-            <MapView
-              issues={grievances}
-              onSelectIssue={(iss) => setSelectedIssue(iss)}
-            />
-          </div>
-        )}
-
-        {/* =========================================================
-            TAB 4: PREDICTIVE GOVERNANCE INSIGHTS
-        ========================================================= */}
-        {activeTab === "predictive" && (
-          <div className="dashboard-view-fade">
-            <div className="view-heading-bar">
-              <div>
-                <h3>🧠 AI Predictive Governance & Preventive Action</h3>
-                <p>
-                  Algorithms cross-reference historical grievance recurrence, weather forecasts, sensor data, and road load to forecast infrastructure hazards.
-                </p>
-              </div>
-            </div>
-
-            <div className="predictive-cards-stack">
-              {predictiveForecasts.map((forecast) => (
-                <div key={forecast.id} className={`predictive-card ${forecast.severity}`}>
-                  <div className="predictive-card-header">
-                    <div className="hazard-title-group">
-                      <span className="hazard-badge">● PREDICTIVE ANOMALY DETECTED</span>
-                      <h4>{forecast.hazard}</h4>
-                    </div>
-                    <div className="probability-badge">
-                      <span>Forecast Confidence:</span>
-                      <strong>{forecast.probability}</strong>
+          {/* TAB 2: GRIEVANCE TRIAGE CONSOLE */}
+          {activeTab === "triage" && (
+            <div className="dash-tab-content">
+              <div className="gov-card triage-filter-card">
+                <div className="triage-top-bar">
+                  <div className="card-title-group">
+                    <span className="card-icon">📋</span>
+                    <div>
+                      <h3>Official Grievance Triage & Allocation Console</h3>
+                      <p>Review autonomous AI department assignments, update status, and deploy zonal repair crews</p>
                     </div>
                   </div>
 
-                  <div className="predictive-card-body">
-                    <div className="predictive-grid-info">
-                      <div className="info-cell">
-                        <span className="label">Target Zone</span>
-                        <strong className="value">📍 {forecast.zone}</strong>
-                      </div>
-                      <div className="info-cell">
-                        <span className="label">Estimated Lead Time</span>
-                        <strong className="value">⏳ {forecast.leadTime}</strong>
-                      </div>
-                      <div className="info-cell">
-                        <span className="label">Risk Severity</span>
-                        <strong className={`value severity-${forecast.severity}`}>
-                          {forecast.severity.toUpperCase()}
-                        </strong>
-                      </div>
-                    </div>
-
-                    <div className="predictive-rationale">
-                      <strong>AI Root Cause Analysis:</strong>
-                      <p>{forecast.rationale}</p>
-                    </div>
-
-                    <div className="predictive-action-row">
-                      <div className="action-recommendation">
-                        <span className="rec-label">Recommended Preventive Action:</span>
-                        <span className="rec-text">{forecast.preventiveAction}</span>
-                      </div>
-                      <button
-                        className="dispatch-preventive-btn"
-                        onClick={() => handleDeployPreventive(forecast)}
+                  <div className="filter-controls-row">
+                    <div className="filter-item">
+                      <label>Department:</label>
+                      <select
+                        className="gov-select-sm"
+                        value={filterDept}
+                        onChange={(e) => setFilterDept(e.target.value)}
                       >
-                        ⚡ Authorize & Dispatch Field Team
+                        <option value="all">All Departments</option>
+                        <option value="PWD">PWD (Roads)</option>
+                        <option value="Jal">UP Jal Nigam (Water/Drain)</option>
+                        <option value="NPCL">NPCL Power</option>
+                        <option value="Sanitation">GNIDA Sanitation</option>
+                      </select>
+                    </div>
+
+                    <div className="filter-item">
+                      <label>Severity:</label>
+                      <select
+                        className="gov-select-sm"
+                        value={filterSeverity}
+                        onChange={(e) => setFilterSeverity(e.target.value)}
+                      >
+                        <option value="all">All Severities</option>
+                        <option value="critical">Critical (Under 6 Hr SLA)</option>
+                        <option value="high">High</option>
+                        <option value="medium">Moderate</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grievance-triage-list">
+                  {filteredGrievances.map((g) => (
+                    <div key={g.id} className={`triage-case-card priority-border-${g.severity}`}>
+                      <div className="triage-case-header">
+                        <div className="case-ref-row">
+                          <span className="g-ref-badge">{g.id}</span>
+                          <span className={`priority-badge priority-${g.severity}`}>
+                            {g.severity.toUpperCase()} PRIORITY
+                          </span>
+                          <span className="dept-tag">🏢 {g.department}</span>
+                          <span className="assigned-officer-pill">👤 Assigned: {g.assignedOfficer}</span>
+                        </div>
+
+                        <div className="case-status-actions">
+                          <select
+                            className="gov-status-select"
+                            value={g.status}
+                            onChange={(e) => handleStatusChange(g.id, e.target.value)}
+                          >
+                            <option value="submitted">Registered / Auto-Triaged</option>
+                            <option value="triaged">Assigned to Nodal EE</option>
+                            <option value="in_progress">Field Crew Deployed (In Progress)</option>
+                            <option value="resolved">Resolved & Closed (Photo Verified)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <h4 className="case-title">{g.title}</h4>
+                      <p className="case-desc">{g.description}</p>
+
+                      <div className="case-ai-attributes">
+                        <span className="attr-label">AI Detected Anomaly Attributes:</span>
+                        <div className="attr-tags">
+                          <span className="conf-pill">Confidence: {g.aiConfidence}%</span>
+                          {g.aiTags.map((t, idx) => (
+                            <span key={idx} className="attr-tag-chip">✓ {t}</span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="case-footer-row">
+                        <div className="case-meta-left">
+                          <span>📍 {g.location}</span>
+                          <span>🕒 {g.timestamp}</span>
+                          <span className="sla-pill">⏳ SLA: {g.slaRemaining}</span>
+                        </div>
+
+                        <div className="case-meta-right">
+                          <button
+                            className="gov-btn-dispatch-sm"
+                            onClick={() => handleDispatchEmergencySquad(g)}
+                          >
+                            🚜 Dispatch Emergency Squad
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: GIS HEATMAP & GEO */}
+          {activeTab === "heatmap" && (
+            <div className="dash-tab-content">
+              <div className="gov-card map-wrapper-card">
+                <div className="map-card-header">
+                  <div>
+                    <span className="section-super-label">GIS TELEMETRY GRID</span>
+                    <h3>Greater Noida Metropolitan Infrastructure Anomaly Heatmap</h3>
+                    <p>Satellite and GIS coordinate overlays showing recurring infrastructure vulnerability clusters</p>
+                  </div>
+                </div>
+                <MapView city="Greater Noida" />
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: PREDICTIVE INSIGHTS */}
+          {activeTab === "predictive" && (
+            <div className="dash-tab-content">
+              <div className="gov-card predictive-wrapper-card">
+                <div className="dash-card-header">
+                  <div className="card-title-group">
+                    <span className="card-icon">🧠</span>
+                    <div>
+                      <h3>National AI Predictive Governance & Pre-Emptive Civic Defense</h3>
+                      <p>Predicts infrastructure failures before citizen complaints occur by correlating weather, telemetry, and spatial history</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="predictive-alerts-grid">
+                  <div className="pred-alert-box alert-crit">
+                    <div className="pred-top">
+                      <span className="pred-tag">URGENT MONSOON FLOOD DEFENSE</span>
+                      <span className="pred-prob">Probability: 94%</span>
+                    </div>
+                    <h4>Pari Chowk Underpass Stormwater Culvert Choke</h4>
+                    <p>
+                      Culvert silt levels currently at 85%. Meteorological forecast indicates 45mm rainfall within 36 hours. Immediate suction cleaning deployment recommended to prevent highway flooding.
+                    </p>
+                    <div className="pred-action">
+                      <span>Assigned Agency: UP Jal Nigam Drainage Wing</span>
+                      <button className="gov-btn-primary-sm" onClick={() => alert("Pre-emptive work order UP-PWD-PRE-092 issued to Jal Nigam Nodal Officer.")}>
+                        Issue Pre-Emptive Work Order →
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pred-alert-box alert-high">
+                    <div className="pred-top">
+                      <span className="pred-tag">POWER GRID STRESS FORECAST</span>
+                      <span className="pred-prob">Probability: 89%</span>
+                    </div>
+                    <h4>Sector Alpha 1 Commercial Belt Feeder Overheating</h4>
+                    <p>
+                      Sustained peak temperature above 41°C causing thermal runaway risk on 11kV Substation 4. Load reallocation advised ahead of 7:00 PM peak.
+                    </p>
+                    <div className="pred-action">
+                      <span>Assigned Agency: NPCL State Power Grid</span>
+                      <button className="gov-btn-primary-sm" onClick={() => alert("Load balancing directive dispatched to NPCL Substation.")}>
+                        Dispatch Load Balancing Directive →
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pred-alert-box alert-med">
+                    <div className="pred-top">
+                      <span className="pred-tag">ASPHALT RECURRING DEGRADATION</span>
+                      <span className="pred-prob">Probability: 82%</span>
+                    </div>
+                    <h4>Knowledge Park III Heavy Transit Corridor</h4>
+                    <p>
+                      Historical moisture intrusion patterns predict severe bitumen wear during upcoming monsoon showers. Sub-base soil stabilization required.
+                    </p>
+                    <div className="pred-action">
+                      <span>Assigned Agency: Public Works Department (PWD)</span>
+                      <button className="gov-btn-primary-sm" onClick={() => alert("PWD Pre-Monsoon resurfacing schedule prioritized.")}>
+                        Prioritize Resurfacing Schedule →
                       </button>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* =========================================================
-            TAB 5: DEPARTMENT SLA & TEAMS
-        ========================================================= */}
-        {activeTab === "departments" && (
-          <div className="dashboard-view-fade">
-            <div className="view-heading-bar">
-              <div>
-                <h3>Department Performance & SLA Adherence</h3>
-                <p>Inter-departmental performance monitoring, resolution efficiency, and escalation matrices.</p>
               </div>
             </div>
+          )}
 
-            <div className="department-matrix-table-card">
-              <table className="gov-table">
-                <thead>
-                  <tr>
-                    <th>Department / Agency</th>
-                    <th>Nodal Head</th>
-                    <th>Active Issues</th>
-                    <th>Resolved (MTD)</th>
-                    <th>SLA Compliance</th>
-                    <th>Avg Resolution</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {departmentStats.map((dept, idx) => (
-                    <tr key={idx}>
-                      <td>
-                        <strong>{dept.name}</strong>
-                      </td>
-                      <td>{dept.head}</td>
-                      <td>
-                        <span className="active-tag">{dept.active}</span>
-                      </td>
-                      <td>
-                        <span className="resolved-tag">{dept.resolved}</span>
-                      </td>
-                      <td>
-                        <div className="sla-progress-group">
-                          <span className="sla-value">{dept.slaRate}</span>
-                          <div className="sla-bar-bg">
-                            <div className="sla-bar-fill" style={{ width: dept.slaRate }}></div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>{dept.avgTime}</td>
-                      <td>
-                        <span className="dept-healthy-badge">● Operational</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* =========================================================
-            TAB 6: GOV AI REPORTS
-        ========================================================= */}
-        {activeTab === "reports" && (
-          <div className="dashboard-view-fade">
-            <div className="view-heading-bar">
-              <div>
-                <h3>Autonomous AI Executive Summary & Reports</h3>
-                <p>Automated weekly intelligence briefs generated for District Magistrate & State Secretariat.</p>
-              </div>
-            </div>
-
-            <div className="report-brief-card">
-              <div className="brief-header">
-                <span className="brief-badge">🤖 AUTONOMOUS AI WEEKLY INTELLIGENCE BRIEF</span>
-                <span className="brief-date">Period: August 2026 • Greater Noida Zone</span>
-              </div>
-
-              <div className="brief-content">
-                <h4>Executive Summary:</h4>
-                <p>
-                  Over the past 7 days, IN-PACT processed <strong>1,418 citizen grievances</strong>. 
-                  Autonomous NLP classification achieved a <strong>98.4% precision rate</strong> in routing tickets directly to executive engineers, reducing manual triage latency from 36 hours to under 4 minutes.
-                </p>
-
-                <h4>Key Spatial Discoveries:</h4>
-                <ul>
-                  <li>
-                    <strong>Knowledge Park Corridor:</strong> Pothole complaints surged by 34% following drainage overflow from construction sites. Recommended road resurfacing scheduled for PWD Division 2.
-                  </li>
-                  <li>
-                    <strong>Alpha 1 Commercial Zone:</strong> Recurrent peak-hour transformer sparking detected. 2 sub-feeders rerouted to prevent power failure.
-                  </li>
-                  <li>
-                    <strong>Resolution Efficiency:</strong> Average citizen turnaround time improved by <strong>68%</strong> compared to traditional paper/call center mechanisms.
-                  </li>
-                </ul>
-              </div>
-
-              <div className="brief-footer">
-                <button className="primary-action-btn" onClick={() => alert("Report downloaded as PDF/CSV.")}>
-                  📄 Download Official PDF Report
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
-
-      {/* Selected Issue Modal */}
-      {selectedIssue && (
-        <div className="modal-backdrop" onClick={() => setSelectedIssue(null)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <div className="modal-badge gov-badge-sm">
-                OFFICER INSPECTION • TICKET {selectedIssue.id}
-              </div>
-              <button className="modal-close" onClick={() => setSelectedIssue(null)}>✕</button>
-            </div>
-
-            <div className="modal-body">
-              <h3 className="modal-title">{selectedIssue.title}</h3>
-
-              <div className="modal-tags">
-                <span className={`modal-tag-severity ${selectedIssue.severity}`}>
-                  ● {selectedIssue.severity?.toUpperCase()} PRIORITY
-                </span>
-                <span className="modal-tag-dept">
-                  🏢 {selectedIssue.department}
-                </span>
-                <span className="modal-tag-cat">
-                  {selectedIssue.category}
-                </span>
-              </div>
-
-              <div className="modal-desc-box">
-                <h4>Incident Description</h4>
-                <p>{selectedIssue.description}</p>
-                <div className="modal-location">
-                  📍 <strong>Location:</strong> {selectedIssue.location}
-                </div>
-              </div>
-
-              {selectedIssue.aiTags && (
-                <div className="ai-tags-section">
-                  <span className="ai-tags-label">AI Detected Anomaly Attributes:</span>
-                  <div className="tags-flex">
-                    {selectedIssue.aiTags.map((tag, i) => (
-                      <span key={i} className="ai-tag-chip">⚡ {tag}</span>
-                    ))}
+          {/* TAB 5: DEPARTMENTS & NODAL TEAMS */}
+          {activeTab === "departments" && (
+            <div className="dash-tab-content">
+              <div className="gov-card dept-mgmt-card">
+                <div className="dash-card-header">
+                  <div className="card-title-group">
+                    <span className="card-icon">🏢</span>
+                    <div>
+                      <h3>Statutory Department Hierarchy & Escalation Matrix</h3>
+                      <p>Designated Executive Engineers, contact channels, and statutory appellate officers</p>
+                    </div>
                   </div>
                 </div>
-              )}
 
-              <div className="modal-ai-box">
-                <div className="ai-badge-sm">
-                  <span>✨</span> TRIAGE & JURISDICTION METRICS
-                </div>
-                <div className="ai-metrics-row">
-                  <div>
-                    <span>AI Confidence</span>
-                    <strong>{selectedIssue.aiConfidence || 97}%</strong>
+                <div className="dept-dossier-grid">
+                  <div className="dept-dossier-card">
+                    <div className="dept-d-top">
+                      <span className="dept-icon">🛣️</span>
+                      <div>
+                        <h4>Public Works Department (PWD)</h4>
+                        <p>Division 2 (Greater Noida Expressways & Roads)</p>
+                      </div>
+                    </div>
+                    <div className="officer-contact-details">
+                      <div><strong>Nodal Chief EE:</strong> Er. S.K. Sharma</div>
+                      <div><strong>Office Phone:</strong> 0120-2326101</div>
+                      <div><strong>Escalation Authority:</strong> Chief Executive Officer, GNIDA</div>
+                      <div><strong>Active Field Squads:</strong> 8 Maintenance Teams</div>
+                    </div>
                   </div>
-                  <div>
-                    <span>SLA Countdown</span>
-                    <strong>{selectedIssue.slaRemaining || "4 Hours"}</strong>
+
+                  <div className="dept-dossier-card">
+                    <div className="dept-d-top">
+                      <span className="dept-icon">💧</span>
+                      <div>
+                        <h4>UP Jal Nigam (Water & Drainage)</h4>
+                        <p>Zone 1 (Hydraulic, Stormwater & Sewerage Wing)</p>
+                      </div>
+                    </div>
+                    <div className="officer-contact-details">
+                      <div><strong>Nodal SE:</strong> Er. A.K. Srivastava</div>
+                      <div><strong>Office Phone:</strong> 0120-2326104</div>
+                      <div><strong>Escalation Authority:</strong> District Magistrate / Collector</div>
+                      <div><strong>Active Field Squads:</strong> 6 Jetting & Suction Units</div>
+                    </div>
                   </div>
-                  <div>
-                    <span>Assigned Lead</span>
-                    <strong>{selectedIssue.assignedOfficer || "Er. S.K. Sharma"}</strong>
+
+                  <div className="dept-dossier-card">
+                    <div className="dept-d-top">
+                      <span className="dept-icon">⚡</span>
+                      <div>
+                        <h4>NPCL State Power Distribution</h4>
+                        <p>Substations & Urban Streetlighting Division</p>
+                      </div>
+                    </div>
+                    <div className="officer-contact-details">
+                      <div><strong>Nodal Officer:</strong> R.K. Gupta (Divisional Eng)</div>
+                      <div><strong>Office Phone:</strong> 0120-6226666 / 1912</div>
+                      <div><strong>Escalation Authority:</strong> Superintending Engineer (Power)</div>
+                      <div><strong>Active Field Squads:</strong> 12 Mobile Line Units</div>
+                    </div>
+                  </div>
+
+                  <div className="dept-dossier-card">
+                    <div className="dept-d-top">
+                      <span className="dept-icon">🗑️</span>
+                      <div>
+                        <h4>GNIDA Solid Waste Management</h4>
+                        <p>Health, Sanitation & Bio-Medical Waste Wing</p>
+                      </div>
+                    </div>
+                    <div className="officer-contact-details">
+                      <div><strong>Chief Sanitary Officer:</strong> Dr. Vinod Pathak</div>
+                      <div><strong>Office Phone:</strong> 0120-2326108</div>
+                      <div><strong>Escalation Authority:</strong> Additional CEO (Sanitation)</div>
+                      <div><strong>Active Field Squads:</strong> 24 Compactor Routes</div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+          )}
 
-            <div className="modal-footer">
-              <select
-                className="modal-status-select"
-                value={selectedIssue.status}
-                onChange={(e) => {
-                  handleStatusChange(selectedIssue.id, e.target.value);
-                  setSelectedIssue((prev) => ({ ...prev, status: e.target.value }));
-                }}
-              >
-                <option value="submitted">Status: Submitted</option>
-                <option value="triaged">Status: Triaged & Assigned</option>
-                <option value="in_progress">Status: Work In Progress</option>
-                <option value="resolved">Status: Resolved & Verified</option>
-              </select>
+          {/* TAB 6: REPORTS & AUDIT LOGS */}
+          {activeTab === "reports" && (
+            <div className="dash-tab-content">
+              <div className="gov-card reports-card">
+                <div className="dash-card-header">
+                  <div className="card-title-group">
+                    <span className="card-icon">📈</span>
+                    <div>
+                      <h3>Official Municipal Performance & Audit Reports</h3>
+                      <p>Generate certified statutory disposal reports for Government of Uttar Pradesh & MoHUA</p>
+                    </div>
+                  </div>
+                </div>
 
-              <button className="modal-dismiss-btn" onClick={() => setSelectedIssue(null)}>
-                Close Panel
-              </button>
+                <div className="reports-download-grid">
+                  <div className="report-item-card">
+                    <div className="rep-icon">📄</div>
+                    <div className="rep-info">
+                      <h4>Monthly Grievance Disposal & SLA Compliance Audit</h4>
+                      <p>Detailed ward-wise breakdown of 14,820 registered complaints and resolution turnaround.</p>
+                      <span className="rep-meta">Generated: 20 Aug 2026 • Format: PDF (Signed)</span>
+                    </div>
+                    <button className="gov-btn-primary-sm" onClick={() => window.print()}>
+                      Download PDF Receipt
+                    </button>
+                  </div>
+
+                  <div className="report-item-card">
+                    <div className="rep-icon">📊</div>
+                    <div className="rep-info">
+                      <h4>Pre-Monsoon Drainage Infrastructure Audit (UP Jal Nigam)</h4>
+                      <p>Silt level assessments and emergency suction crew deployment logs across 18 wards.</p>
+                      <span className="rep-meta">Generated: 19 Aug 2026 • Format: PDF</span>
+                    </div>
+                    <button className="gov-btn-primary-sm" onClick={() => window.print()}>
+                      Download PDF Receipt
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

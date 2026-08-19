@@ -9,37 +9,37 @@ export default function Sidebar({
   pendingCount = 14
 }) {
   const citizenNavItems = [
-    { id: "overview", label: "My Overview", icon: "📊" },
-    { id: "report", label: "File Grievance", icon: "📝" },
-    { id: "track", label: "Track Complaints", icon: "🔍", badge: "Live" },
-    { id: "map", label: "Live Civic Map", icon: "🗺️" },
-    { id: "community", label: "Community Feed", icon: "👥" }
+    { id: "overview", label: "Dashboard Overview", labelHi: "डैशबोर्ड विवरण", icon: "📊" },
+    { id: "report", label: "Lodge Grievance", labelHi: "शिकायत दर्ज करें", icon: "📝" },
+    { id: "track", label: "Track Complaints", labelHi: "शिकायत स्थिति", icon: "🔍", badge: "Live" },
+    { id: "map", label: "Ward GIS Map", labelHi: "वार्ड मानचित्र", icon: "🗺️" },
+    { id: "community", label: "Community Feed", labelHi: "सामुदायिक मुद्दे", icon: "👥" }
   ];
 
   const govNavItems = [
-    { id: "overview", label: "Intelligence Command", icon: "⚡" },
-    { id: "triage", label: "Grievance Triage", icon: "📋", count: pendingCount },
-    { id: "heatmap", label: "GIS Heatmap & Geo", icon: "📍" },
-    { id: "predictive", label: "Predictive Insights", icon: "🧠", alert: true },
-    { id: "departments", label: "Dept SLA & Teams", icon: "🏢" },
-    { id: "reports", label: "Gov AI Reports", icon: "📈" }
+    { id: "overview", label: "Executive Command", labelHi: "कार्यकारी समीक्षा", icon: "🏛️" },
+    { id: "triage", label: "Grievance Triage Queue", labelHi: "शिकायत प्रेषण", icon: "📋", count: pendingCount },
+    { id: "heatmap", label: "GIS Heatmap & Geo", labelHi: "जीआईएस हॉटस्पॉट", icon: "📍" },
+    { id: "predictive", label: "Predictive Civic Defense", labelHi: "पूर्वानुमान अलर्ट", icon: "🧠", alert: true },
+    { id: "departments", label: "Department SLA Teams", labelHi: "विभागीय मैट्रिक्स", icon: "🏢" },
+    { id: "reports", label: "Statutory Audit Reports", labelHi: "ऑडिट रिपोर्ट", icon: "📈" }
   ];
 
   const items = role === "admin" ? govNavItems : citizenNavItems;
 
   return (
-    <aside className="dashboard-sidebar">
-      <div className="sidebar-section-title">
-        {role === "admin" ? "OFFICER CONTROLS" : "CITIZEN SERVICES"}
+    <aside className="gov-dashboard-sidebar">
+      <div className="gov-sidebar-title">
+        {role === "admin" ? "EXECUTIVE OFFICER PORTAL" : "CITIZEN SERVICES DIRECTORY"}
       </div>
 
-      <ul className="sidebar-menu">
+      <ul className="gov-sidebar-menu">
         {items.map((item) => {
           const isActive = activeTab === item.id;
           return (
             <li key={item.id}>
               <button
-                className={`sidebar-link ${isActive ? "active" : ""}`}
+                className={`gov-sidebar-link ${isActive ? "active" : ""}`}
                 onClick={() => {
                   if (item.id === "report" && onNewGrievance) {
                     onNewGrievance();
@@ -49,32 +49,35 @@ export default function Sidebar({
                 }}
               >
                 <span className="sidebar-icon">{item.icon}</span>
-                <span className="sidebar-label">{item.label}</span>
+                <div className="sidebar-labels-col">
+                  <span className="sidebar-label-en">{item.label}</span>
+                  <span className="sidebar-label-hi">{item.labelHi}</span>
+                </div>
 
                 {item.badge && <span className="sidebar-badge">{item.badge}</span>}
                 {item.count && <span className="sidebar-count">{item.count}</span>}
-                {item.alert && <span className="sidebar-alert-dot" title="AI Anomaly Alerts"></span>}
+                {item.alert && <span className="sidebar-alert-dot" title="Predictive Anomalies"></span>}
               </button>
             </li>
           );
         })}
       </ul>
 
-      <div className="sidebar-footer">
+      <div className="gov-sidebar-footer">
         {role === "admin" ? (
-          <div className="sidebar-ai-status">
-            <div className="status-indicator">
-              <span className="pulse-dot"></span>
-              <span className="status-title">AI Engine Active</span>
+          <div className="sidebar-gov-cert">
+            <span className="cert-icon">🔒</span>
+            <div className="cert-text">
+              <strong>NIC Certified Intranet</strong>
+              <p>Section 65B Digital Evidence Logging Active</p>
             </div>
-            <p className="status-detail">NLP & Computer Vision routing 98.4% accurately</p>
           </div>
         ) : (
-          <div className="sidebar-help-card">
-            <span className="help-icon">💡</span>
+          <div className="sidebar-gov-help">
+            <span className="help-icon">📞</span>
             <div className="help-text">
-              <strong>Need Emergency Help?</strong>
-              <p>Call 112 for Police / 101 for Fire Emergency.</p>
+              <strong>National Helpline: 1913</strong>
+              <p>Toll-free 24x7 Citizen Grievance Assistance</p>
             </div>
           </div>
         )}

@@ -3,8 +3,27 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    @apply bg-surface-canvas text-text-primary;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  :root {
+    --gov-navy: #0A2540;
+    --gov-navy-dark: #06192C;
+    --gov-navy-light: #1E3A8A;
+    --gov-saffron: #D97706;
+    --gov-saffron-dark: #B45309;
+    --gov-green: #15803D;
+    --gov-green-dark: #166534;
+    --gov-bg: #F8FAFC;
+    --gov-card-bg: #FFFFFF;
+    --gov-border: #CBD5E1;
+    --gov-text: #0F172A;
+    --gov-text-muted: #64748B;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--gov-bg);
+    color: var(--gov-text);
+    font-family: 'Inter', 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
 }

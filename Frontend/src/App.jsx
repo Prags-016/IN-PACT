@@ -5,6 +5,7 @@ import CitizenLogin from "./pages/CitizenLogin";
 import GovernmentLogin from "./pages/GovernmentLogin";
 import CitizenDashboard from "./pages/CitizenDashboard";
 import GovernmentDashboard from "./pages/GovernmentDashboard";
+import { NationalEmblem, GovDigitalIndiaBadge } from "./components/GovEmblem";
 
 function App() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -43,18 +44,18 @@ function App() {
           avatar: "🏛️"
         }
       : {
-          id: "CIT-8821",
+          id: "CIT-UP-8821",
           name: "Ananya Sharma",
           role: "citizen",
           email: "ananya.sharma@example.com",
           phone: "+91 98765 43210",
-          ward: "Ward 12, Greater Noida",
+          ward: "Ward 12, Knowledge Park, Greater Noida",
           avatar: "👩"
         });
 
   return (
-    <div className="app-root">
-      {/* Top Main Navbar */}
+    <div className="app-root gov-theme-app">
+      {/* Top Main Government Navbar */}
       <Navbar
         currentPage={currentPage}
         navigateTo={navigateTo}
@@ -89,91 +90,120 @@ function App() {
         )}
       </main>
 
-      {/* Global Application Footer on Public Pages */}
+      {/* Official Government Footer on Public Pages */}
       {(currentPage === "home" ||
         currentPage === "citizen-login" ||
         currentPage === "gov-login") && (
-        <footer className="app-footer">
-          <div className="footer-container">
-            <div className="footer-brand">
-              <div className="footer-logo">
-                <div className="logo-icon-sm">I</div>
-                <span>IN-PACT CIVIC SYSTEMS</span>
+        <footer className="gov-official-footer">
+          {/* Top Footer Pillars Bar */}
+          <div className="gov-footer-pillars">
+            <div className="gov-container pillars-inner">
+              <div className="pillar-item">
+                <NationalEmblem size={40} />
+                <div>
+                  <h4>Government of India</h4>
+                  <p>Ministry of Housing & Urban Affairs (MoHUA)</p>
+                </div>
               </div>
-              <p>
-                Autonomous AI Grievance Triaging, Multi-Modal Ingestion, and
-                Predictive Governance for Smart Metropolitan Municipalities.
-              </p>
-              <div className="sih-tag">
-                🏛️ Smart Cities Mission • Government of India • SIH 2026
+              <div className="pillar-item">
+                <div className="pillar-seal">🏛️</div>
+                <div>
+                  <h4>Government of Uttar Pradesh</h4>
+                  <p>Greater Noida Industrial Development Authority (GNIDA)</p>
+                </div>
               </div>
-            </div>
-
-            <div className="footer-links-group">
-              <div className="footer-column">
-                <h4>Citizens</h4>
-                <button
-                  className="footer-link-btn"
-                  onClick={() => navigateTo("citizen-login")}
-                >
-                  Citizen Login Portal
-                </button>
-                <button
-                  className="footer-link-btn"
-                  onClick={() => navigateTo("citizen-dashboard")}
-                >
-                  Report Grievance
-                </button>
-                <button
-                  className="footer-link-btn"
-                  onClick={() => navigateTo("citizen-dashboard")}
-                >
-                  Track SLA Timeline
-                </button>
-                <span>Anonymous Filing Support</span>
+              <div className="pillar-item">
+                <GovDigitalIndiaBadge size={32} />
+                <div>
+                  <h4>Digital India Initiative</h4>
+                  <p>Smart Cities Mission • SIH 2026</p>
+                </div>
               </div>
-
-              <div className="footer-column">
-                <h4>Authorities</h4>
-                <button
-                  className="footer-link-btn"
-                  onClick={() => navigateTo("gov-login")}
-                >
-                  Officer SSO Command
-                </button>
-                <button
-                  className="footer-link-btn"
-                  onClick={() => navigateTo("gov-dashboard")}
-                >
-                  Grievance Triage Console
-                </button>
-                <button
-                  className="footer-link-btn"
-                  onClick={() => navigateTo("gov-dashboard")}
-                >
-                  Predictive Heatmaps
-                </button>
-                <span>SLA Escalation Matrix</span>
-              </div>
-
-              <div className="footer-column">
-                <h4>System Trust</h4>
-                <span>🔒 256-Bit SSL Encrypted</span>
-                <span>🛡️ NIC CERT-In Compliant</span>
-                <span>⚡ 98.4% AI Accuracy</span>
-                <span>📍 Live GIS Telemetry</span>
+              <div className="pillar-item">
+                <div className="pillar-seal">🔒</div>
+                <div>
+                  <h4>National Informatics Centre (NIC)</h4>
+                  <p>CERT-In Security Audited e-Governance Platform</p>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="footer-bottom-bar">
-            <span>
-              © {new Date().getFullYear()} IN-PACT AI Governance Platform. All
-              rights reserved.
-            </span>
-            <div className="footer-status-pill">
-              <span className="live-dot-green"></span>
-              <span>All 18 Ward Municipal AI Nodes Operational</span>
+          {/* Main Footer Links & Directory */}
+          <div className="gov-footer-main">
+            <div className="gov-container footer-main-inner">
+              <div className="footer-col-brand">
+                <div className="footer-brand-title">
+                  <span className="brand-badge-gov">GOVT. OF INDIA</span>
+                  <h3>IN-PACT PORTAL</h3>
+                </div>
+                <p className="footer-desc">
+                  Integrated National Public Action & Grievance Redressal System. An automated, multi-modal public grievance ingestion and predictive civic triaging portal compliant with national e-governance service delivery standards.
+                </p>
+                <div className="footer-contact-info">
+                  <div><strong>Nodal Helpdesk:</strong> 1800-180-0101 / 1913</div>
+                  <div><strong>Email:</strong> pg-cell@gnida.in</div>
+                  <div><strong>Address:</strong> GNIDA Administrative Complex, Plot No. 01, Knowledge Park IV, Greater Noida, UP - 201308</div>
+                </div>
+              </div>
+
+              <div className="footer-col-links">
+                <h4>Citizen Redressal</h4>
+                <ul>
+                  <li><button className="footer-text-btn" onClick={() => navigateTo("citizen-login")}>Lodge a Grievance</button></li>
+                  <li><button className="footer-text-btn" onClick={() => navigateTo("citizen-dashboard")}>Track Grievance Status</button></li>
+                  <li><button className="footer-text-btn" onClick={() => navigateTo("citizen-dashboard")}>Download Acknowledgement Slip</button></li>
+                  <li><button className="footer-text-btn" onClick={() => navigateTo("citizen-dashboard")}>Citizen Charter & SLAs</button></li>
+                  <li><button className="footer-text-btn" onClick={() => navigateTo("citizen-login")}>DigiLocker KYC Verification</button></li>
+                </ul>
+              </div>
+
+              <div className="footer-col-links">
+                <h4>Administrative Portal</h4>
+                <ul>
+                  <li><button className="footer-text-btn" onClick={() => navigateTo("gov-login")}>Officer Parichay SSO</button></li>
+                  <li><button className="footer-text-btn" onClick={() => navigateTo("gov-dashboard")}>Executive Triage Console</button></li>
+                  <li><button className="footer-text-btn" onClick={() => navigateTo("gov-dashboard")}>GIS Infrastructure Telemetry</button></li>
+                  <li><button className="footer-text-btn" onClick={() => navigateTo("gov-dashboard")}>Department SLA Scorecard</button></li>
+                  <li><button className="footer-text-btn" onClick={() => navigateTo("gov-dashboard")}>Predictive Pre-Monsoon Alerts</button></li>
+                </ul>
+              </div>
+
+              <div className="footer-col-links">
+                <h4>Statutory & Policy Links</h4>
+                <ul>
+                  <li><span>Hyperlink Policy</span></li>
+                  <li><span>Privacy Policy</span></li>
+                  <li><span>Terms & Conditions</span></li>
+                  <li><span>Disclaimer & Copyright</span></li>
+                  <li><span>Accessibility Statement</span></li>
+                  <li><span>Help & FAQ Directory</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Compliance & Web Manager Bar */}
+          <div className="gov-footer-bottom">
+            <div className="gov-container footer-bottom-inner">
+              <div className="bottom-left">
+                <p>
+                  Website Content Managed by <strong>Ministry of Housing & Urban Affairs & GNIDA, Govt. of India</strong>
+                </p>
+                <p className="designed-by-nic">
+                  Designed, Developed and Hosted by <strong>National Informatics Centre (NIC)</strong>
+                </p>
+              </div>
+
+              <div className="bottom-right">
+                <div className="visitor-count-box">
+                  <span className="v-label">Total Visitors:</span>
+                  <span className="v-num">1,482,930</span>
+                </div>
+                <div className="last-updated">
+                  Last Updated: <strong>20 Aug 2026</strong>
+                </div>
+              </div>
             </div>
           </div>
         </footer>

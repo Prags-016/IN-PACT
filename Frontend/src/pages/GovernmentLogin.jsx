@@ -1,14 +1,26 @@
 import React, { useState } from "react";
+import { NationalEmblem } from "../components/GovEmblem";
 
 export default function GovernmentLogin({ onLogin, navigateTo }) {
   const [authMode, setAuthMode] = useState("sso"); // 'sso' | 'token' | 'dept'
   const [officerId, setOfficerId] = useState("GOV-IAS-001");
   const [password, setPassword] = useState("••••••••••••");
-  const [showPassword, setShowPassword] = useState(false);
   const [department, setDepartment] = useState("GNIDA - Central Command & Administration");
-  const [zone, setZone] = useState("Greater Noida Metropolis HQ");
+  const [zone, setZone] = useState("Greater Noida Metropolis (All Zones)");
   const [smartTokenPin, setSmartTokenPin] = useState("9042");
   const [loading, setLoading] = useState(false);
+  const [captchaCode, setCaptchaCode] = useState("N8P4Y");
+  const [captchaInput, setCaptchaInput] = useState("N8P4Y");
+
+  const refreshCaptcha = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let code = "";
+    for (let i = 0; i < 5; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setCaptchaCode(code);
+    setCaptchaInput("");
+  };
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -24,10 +36,11 @@ export default function GovernmentLogin({ onLogin, navigateTo }) {
         zone: zone,
         badgeId: "NIC-SSO-7729",
         clearanceLevel: "Level 1 (Executive District Command)",
-        avatar: "🏛️"
+        avatar: "🏛️",
+        authType: "Parichay NIC SSO Verified"
       });
       navigateTo("gov-dashboard");
-    }, 600);
+    }, 450);
   };
 
   const handleQuickDemoAdmin = (roleType) => {
@@ -41,7 +54,8 @@ export default function GovernmentLogin({ onLogin, navigateTo }) {
         zone: "Greater Noida Metropolis (All Zones)",
         badgeId: "NIC-IAS-0012",
         clearanceLevel: "Level 1 (Executive Command)",
-        avatar: "🏛️"
+        avatar: "🏛️",
+        authType: "Executive NIC SSO"
       });
     } else if (roleType === "pwd") {
       onLogin({
@@ -53,7 +67,8 @@ export default function GovernmentLogin({ onLogin, navigateTo }) {
         zone: "Zone 2 (Knowledge Park & Expressway)",
         badgeId: "PWD-EE-0412",
         clearanceLevel: "Level 2 (Infrastructure Ops)",
-        avatar: "🛣️"
+        avatar: "🛣️",
+        authType: "Departmental e-Token"
       });
     } else if (roleType === "jal") {
       onLogin({
@@ -65,7 +80,8 @@ export default function GovernmentLogin({ onLogin, navigateTo }) {
         zone: "Zone 1 (Pari Chowk & Commercial Belt)",
         badgeId: "JN-SE-0108",
         clearanceLevel: "Level 2 (Hydraulic Ops)",
-        avatar: "💧"
+        avatar: "💧",
+        authType: "Departmental e-Token"
       });
     } else {
       onLogin({
@@ -77,307 +93,224 @@ export default function GovernmentLogin({ onLogin, navigateTo }) {
         zone: "Alpha-Delta Sector Substations",
         badgeId: "NPCL-NO-0305",
         clearanceLevel: "Level 2 (Electrical Safety)",
-        avatar: "⚡"
+        avatar: "⚡",
+        authType: "Departmental e-Token"
       });
     }
     navigateTo("gov-dashboard");
   };
 
   return (
-    <div className="auth-page-wrapper gov-auth-page">
-      {/* Top back navigation */}
-      <div className="auth-top-nav">
-        <button className="auth-back-btn gov-back-btn" onClick={() => navigateTo("home")}>
-          ← Return to IN-PACT Overview
-        </button>
-        <div className="auth-lang-badge gov-top-badge">
-          <span>🏛️ Government of Uttar Pradesh • Official Command Gateway</span>
+    <div className="gov-auth-wrapper officer-auth-wrapper">
+      {/* Top back ribbon */}
+      <div className="gov-auth-top-bar officer-top-bar">
+        <div className="gov-container auth-top-inner">
+          <button className="gov-auth-back-btn" onClick={() => navigateTo("home")}>
+            ← Return to National Portal Home
+          </button>
+          <div className="auth-cert-seal">
+            🏛️ Government of Uttar Pradesh • Official Parichay SSO Gateway
+          </div>
         </div>
       </div>
 
-      <div className="auth-container gov-auth-container">
-        {/* Left / Officer Login Card */}
-        <div className="auth-card gov-card">
-          <div className="auth-header">
-            <div className="auth-badge gov-badge">
-              <span className="badge-emblem">🏛️</span> GOVERNMENT OF UTTAR PRADESH • IN-PACT
+      <div className="gov-container auth-page-layout">
+        {/* Left: Officer Parichay SSO Login Card */}
+        <div className="gov-auth-card officer-card">
+          <div className="auth-card-top">
+            <NationalEmblem size={44} />
+            <div className="auth-title-texts">
+              <span className="auth-dept-sub">विभागीय अधिकारी लॉगिन • NODAL OFFICER GATEWAY</span>
+              <h2>Government Officer Command Login</h2>
+              <p>Parichay National Single Sign-On for Designated Nodal Engineers & Magistrates</p>
             </div>
-            <h2>Officer Command Access</h2>
-            <p>
-              AI-Powered Civic Intelligence, Predictive Hotspot Triage & Multi-Agency Operations Console
-            </p>
           </div>
 
-          {/* Mode Switcher Tabs */}
-          <div className="auth-tabs gov-tabs">
+          {/* Mode Selector Tabs */}
+          <div className="gov-auth-tabs">
             <button
-              type="button"
-              className={`auth-tab-btn gov-tab-btn ${authMode === "sso" ? "active" : ""}`}
+              className={`auth-tab-btn ${authMode === "sso" ? "active" : ""}`}
               onClick={() => setAuthMode("sso")}
             >
-              🏛️ Parichay Govt SSO
+              🏛️ Parichay SSO
             </button>
             <button
-              type="button"
-              className={`auth-tab-btn gov-tab-btn ${authMode === "token" ? "active" : ""}`}
+              className={`auth-tab-btn ${authMode === "token" ? "active" : ""}`}
               onClick={() => setAuthMode("token")}
             >
-              🛡️ Smart Token / PKI
+              🔐 e-Token / DSC PIN
             </button>
             <button
-              type="button"
-              className={`auth-tab-btn gov-tab-btn ${authMode === "dept" ? "active" : ""}`}
+              className={`auth-tab-btn ${authMode === "dept" ? "active" : ""}`}
               onClick={() => setAuthMode("dept")}
             >
-              📋 Department Officer ID
+              🏢 Department Credentials
             </button>
           </div>
 
-          <form onSubmit={handleLogin} className="auth-form">
-            <div className="form-group">
-              <label htmlFor="deptSelect">Administrative Department / Nodal Agency</label>
+          <form onSubmit={handleLogin} className="gov-form auth-tab-body">
+            <div className="gov-form-group">
+              <label className="gov-form-label">
+                Official Government Email / Gov ID (सरकारी पहचान पत्र / ईमेल) *
+              </label>
+              <input
+                type="text"
+                className="gov-input"
+                placeholder="officer.name@gov.in or @nic.in"
+                value={officerId}
+                onChange={(e) => setOfficerId(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="gov-form-group">
+              <label className="gov-form-label">
+                Designated Department (विभागीय क्षेत्राधिकार) *
+              </label>
               <select
-                id="deptSelect"
-                className="form-select gov-select"
+                className="gov-select"
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
               >
                 <option value="GNIDA - Central Command & Administration">
-                  🏛️ GNIDA - Central Command & District Administration
+                  GNIDA - Central Command & Administration (DM / Commissioner)
                 </option>
                 <option value="Public Works Department (PWD)">
-                  🛣️ Public Works Department (PWD - Road Infra)
+                  Public Works Department (PWD - Division 2)
                 </option>
                 <option value="UP Jal Nigam (Water & Drainage)">
-                  💧 UP Jal Nigam (Water Supply & Drainage Wing)
+                  UP Jal Nigam (Drinking Water & Storm Drainage)
                 </option>
                 <option value="NPCL / State Power Distribution Grid">
-                  ⚡ NPCL / State Power Distribution Grid
+                  NPCL State Power Distribution Grid
                 </option>
-                <option value="GNIDA Health & Solid Waste Management">
-                  🗑️ GNIDA Health & Solid Waste Management
-                </option>
-                <option value="Traffic Police & Urban Mobility Command">
-                  🚦 Traffic Police & Urban Mobility Command
-                </option>
-                <option value="Fire & Disaster Emergency Response">
-                  🚒 Emergency Response & Disaster Management
+                <option value="GNIDA Health & Sanitation Department">
+                  GNIDA Health & Solid Waste Sanitation
                 </option>
               </select>
             </div>
 
-            {authMode !== "token" ? (
-              <>
-                <div className="form-group">
-                  <div className="form-label-row">
-                    <label htmlFor="officerIdInput">Government Officer ID / Parichay SSO Username</label>
-                    <span className="gov-sample-hint">e.g. GOV-IAS-001</span>
-                  </div>
-                  <input
-                    id="officerIdInput"
-                    type="text"
-                    className="form-input gov-input"
-                    placeholder="e.g. IAS-9042 or PWD-EE-412"
-                    value={officerId}
-                    onChange={(e) => setOfficerId(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <div className="form-label-row">
-                    <label htmlFor="passwordInput">Security Passcode / SSO Smart Token PIN</label>
-                    <button
-                      type="button"
-                      className="pwd-toggle-btn"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? "👁️ Hide" : "👁️ Show"}
-                    </button>
-                  </div>
-                  <div className="password-field-wrapper">
-                    <input
-                      id="passwordInput"
-                      type={showPassword ? "text" : "password"}
-                      className="form-input gov-input"
-                      placeholder="••••••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <span className="form-hint gov-hint">
-                    🔒 Secured with 256-bit NIC hardware token cryptography.
-                  </span>
-                </div>
-              </>
+            {authMode === "token" ? (
+              <div className="gov-form-group">
+                <label className="gov-form-label">
+                  Digital Signature Hardware Token PIN (e-Token PIN) *
+                </label>
+                <input
+                  type="password"
+                  className="gov-input"
+                  placeholder="Enter 4 or 6-digit DSC PIN"
+                  value={smartTokenPin}
+                  onChange={(e) => setSmartTokenPin(e.target.value)}
+                  required
+                />
+              </div>
             ) : (
-              <div className="smart-token-box">
-                <div className="token-status-pill">
-                  <span className="token-indicator pulse-gold"></span>
-                  <span>Hardware Security Module (HSM) Key Detected</span>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="tokenPin">Smart Token 4-Digit Security PIN</label>
-                  <input
-                    id="tokenPin"
-                    type="password"
-                    maxLength={4}
-                    className="form-input otp-input-large gov-token-pin"
-                    value={smartTokenPin}
-                    onChange={(e) => setSmartTokenPin(e.target.value)}
-                    required
-                  />
-                </div>
+              <div className="gov-form-group">
+                <label className="gov-form-label">Parichay / NIC Account Password *</label>
+                <input
+                  type="password"
+                  className="gov-input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
               </div>
             )}
 
-            <button type="submit" className="primary-auth-btn gov-action-btn" disabled={loading}>
-              {loading ? (
-                <span className="btn-loading-flex">
-                  <span className="spinner-dot gov-spinner"></span> Authenticating via Parichay SSO...
-                </span>
-              ) : (
-                "Authenticate & Open Officer Command Center →"
-              )}
+            {/* Standard Captcha */}
+            <div className="gov-captcha-box">
+              <label className="gov-form-label">Security Verification Code *</label>
+              <div className="captcha-row">
+                <div className="captcha-display" title="Security Captcha">
+                  <span>{captchaCode}</span>
+                </div>
+                <button type="button" className="captcha-refresh-btn" onClick={refreshCaptcha}>
+                  🔄
+                </button>
+                <input
+                  type="text"
+                  className="gov-input captcha-input"
+                  placeholder="Enter code"
+                  value={captchaInput}
+                  onChange={(e) => setCaptchaInput(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <button type="submit" className="gov-btn-officer-block" disabled={loading}>
+              {loading ? "Authenticating Clearance..." : "Login to Executive Command Console (प्रवेश करें) →"}
             </button>
           </form>
 
-          {/* Quick Demo Officer Evaluation Divider */}
-          <div className="auth-divider gov-divider">
-            <span>⚡ 1-CLICK DEMO OFFICER SIGN-IN (FOR EVALUATORS)</span>
-          </div>
-
-          <div className="demo-officer-grid">
-            <button
-              type="button"
-              className="demo-officer-card primary-gov"
-              onClick={() => handleQuickDemoAdmin("commissioner")}
-            >
-              <div className="demo-officer-icon">🏛️</div>
-              <div className="demo-officer-details">
-                <strong>Dr. Rajesh Mehta, IAS</strong>
-                <span>District Magistrate & Municipal Commissioner</span>
-                <span className="dept-tag">GNIDA Central Command</span>
-              </div>
-              <span className="demo-arrow">→</span>
-            </button>
-
-            <button
-              type="button"
-              className="demo-officer-card"
-              onClick={() => handleQuickDemoAdmin("pwd")}
-            >
-              <div className="demo-officer-icon">🛣️</div>
-              <div className="demo-officer-details">
-                <strong>Er. S.K. Sharma</strong>
-                <span>Chief Executive Engineer</span>
-                <span className="dept-tag">Public Works Department (PWD)</span>
-              </div>
-              <span className="demo-arrow">→</span>
-            </button>
-
-            <button
-              type="button"
-              className="demo-officer-card"
-              onClick={() => handleQuickDemoAdmin("jal")}
-            >
-              <div className="demo-officer-icon">💧</div>
-              <div className="demo-officer-details">
-                <strong>Er. A.K. Srivastava</strong>
-                <span>Superintending Engineer</span>
-                <span className="dept-tag">UP Jal Nigam (Water & Drainage)</span>
-              </div>
-              <span className="demo-arrow">→</span>
-            </button>
-
-            <button
-              type="button"
-              className="demo-officer-card"
-              onClick={() => handleQuickDemoAdmin("npcl")}
-            >
-              <div className="demo-officer-icon">⚡</div>
-              <div className="demo-officer-details">
-                <strong>Priya Sundaram</strong>
-                <span>Nodal Grid Power Officer</span>
-                <span className="dept-tag">NPCL State Electricity Grid</span>
-              </div>
-              <span className="demo-arrow">→</span>
-            </button>
-          </div>
-
-          {/* Footer Switcher to Citizen Login */}
-          <div className="auth-footer gov-footer">
-            <p>
-              Are you a Citizen looking to report a problem or track a ticket?{" "}
-              <button className="text-link citizen-link" onClick={() => navigateTo("citizen-login")}>
-                Citizen Portal Login →
+          {/* Quick Department Authority Switcher for Evaluation */}
+          <div className="gov-demo-profile-box">
+            <span className="demo-box-label">QUICK EVALUATION NODAL JURISDICTIONS:</span>
+            <div className="demo-chips-grid">
+              <button
+                type="button"
+                className="gov-demo-chip admin-chip"
+                onClick={() => handleQuickDemoAdmin("commissioner")}
+              >
+                🏛️ District Magistrate / Commissioner
               </button>
-            </p>
+              <button
+                type="button"
+                className="gov-demo-chip admin-chip"
+                onClick={() => handleQuickDemoAdmin("pwd")}
+              >
+                🛣️ Chief Executive Engineer (PWD)
+              </button>
+              <button
+                type="button"
+                className="gov-demo-chip admin-chip"
+                onClick={() => handleQuickDemoAdmin("jal")}
+              >
+                💧 Superintending Engineer (Jal Nigam)
+              </button>
+              <button
+                type="button"
+                className="gov-demo-chip admin-chip"
+                onClick={() => handleQuickDemoAdmin("npcl")}
+              >
+                ⚡ Nodal Power Grid Officer (NPCL)
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Right / Sidebar Information */}
-        <div className="auth-sidebar-info gov-sidebar-info">
-          <div className="sidebar-intro-box gov-intro-box">
-            <h3>Officer Intelligence Command</h3>
-            <p>High-precision triaging and multi-agency response orchestration.</p>
-          </div>
+        {/* Right: Administrative Instructions & Security Protocol */}
+        <div className="gov-auth-info-col">
+          <div className="gov-card auth-info-card officer-info-card">
+            <div className="info-card-header">
+              <span className="info-icon">🛡️</span>
+              <h3>Nodal Officer Statutory Protocol</h3>
+            </div>
+            <ul className="info-points-list">
+              <li>
+                <strong>Statutory SLA Accountability:</strong> Unresolved critical grievances past 6 hours automatically escalate to the District Magistrate's Dashboard.
+              </li>
+              <li>
+                <strong>Geotagged Photographic Proof:</strong> Field inspections require mandatory upload of timestamped, geotagged resolution images before marking complaints resolved.
+              </li>
+              <li>
+                <strong>Official Audit Logs:</strong> Every status update, officer reallocation, and timeline modification is digitally logged under Indian Evidence Act Section 65B.
+              </li>
+              <li>
+                <strong>Emergency Helpline Direct Dispatch:</strong> Severe transformer fires and pipeline bursts trigger automated SMS broadcasts to zonal emergency squads.
+              </li>
+            </ul>
 
-          <div className="info-feature-box gov-info-box">
-            <div className="info-icon gov-icon">⚡</div>
-            <div className="info-content">
-              <h4>Autonomous NLP & Vision Routing</h4>
-              <p>
-                Over 98.4% of citizen reports are automatically triaged with urgency classification, jurisdictional routing, and SLA timers.
-              </p>
-            </div>
-          </div>
-
-          <div className="info-feature-box gov-info-box">
-            <div className="info-icon gov-icon">🧠</div>
-            <div className="info-content">
-              <h4>Predictive Civic Defense</h4>
-              <p>
-                Cross-references weather forecasts with historical silt patterns to predict urban flood hotspots and electrical failures weeks before escalation.
-              </p>
-            </div>
-          </div>
-
-          <div className="info-feature-box gov-info-box">
-            <div className="info-icon gov-icon">📊</div>
-            <div className="info-content">
-              <h4>Cross-Department SLA Accountability</h4>
-              <p>
-                Real-time escalation matrices alert District Magistrate, Chief Engineers, and Ward Supervisors on critical SLA risks.
-              </p>
-            </div>
-          </div>
-
-          <div className="info-feature-box gov-info-box">
-            <div className="info-icon gov-icon">📍</div>
-            <div className="info-content">
-              <h4>Spatiotemporal GIS Clustering</h4>
-              <p>
-                Eliminates queue clutter by automatically grouping duplicate complaints in proximity into unified field work orders.
-              </p>
-            </div>
-          </div>
-
-          {/* Security Trust Strip */}
-          <div className="security-trust-strip gov-trust-strip">
-            <div className="trust-item">
-              <span className="trust-icon">🛡️</span>
-              <span>NIC CERT-In Audited</span>
-            </div>
-            <div className="trust-item">
-              <span className="trust-icon">🏛️</span>
-              <span>Parichay Govt SSO</span>
-            </div>
-            <div className="trust-item">
-              <span className="trust-icon">🔒</span>
-              <span>Restricted Official Access</span>
+            <div className="official-helpline-box officer-help-box">
+              <h4>NIC Nodal Helpdesk (Government Intranet)</h4>
+              <div className="helpline-row">
+                <span>📞 NIC District Officer Support:</span>
+                <strong>0120-2326110</strong>
+              </div>
+              <div className="helpline-row">
+                <span>🔐 Cyber Security Incident (CERT-In):</span>
+                <strong>1800-11-4949</strong>
+              </div>
             </div>
           </div>
         </div>
