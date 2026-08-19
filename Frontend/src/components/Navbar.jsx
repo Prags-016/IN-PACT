@@ -6,6 +6,7 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
   const [lang, setLang] = useState("EN");
   const [fontSize, setFontSize] = useState("normal"); // 'small' | 'normal' | 'large'
   const [highContrast, setHighContrast] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const updateTime = () => {
@@ -17,7 +18,6 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
         day: "numeric",
         hour: "2-digit",
         minute: "2-digit",
-        second: "2-digit",
         hour12: true
       };
       setCurrentDate(now.toLocaleString("en-IN", options));
@@ -40,6 +40,11 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
     document.body.classList.toggle("gov-high-contrast");
   };
 
+  const handleNavClick = (page) => {
+    navigateTo(page);
+    setMobileMenuOpen(false);
+  };
+
   return (
     <header className="gov-header-wrapper">
       {/* 1. Official Indian Flag Tricolor Ribbon */}
@@ -54,23 +59,23 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
         <div className="gov-container utility-inner">
           <div className="utility-left">
             <span className="gov-badge-official">
-              <span className="emblem-mini">🏛️</span> भारत सरकार | Government of India
+              <span className="emblem-mini">🏛️</span> भारत सरकार | Govt. of India
             </span>
-            <span className="utility-separator">|</span>
-            <span className="utility-state">उत्तर प्रदेश शासन (GNIDA)</span>
+            <span className="utility-separator hide-mobile">|</span>
+            <span className="utility-state hide-mobile">उत्तर प्रदेश शासन (GNIDA)</span>
           </div>
 
           <div className="utility-right">
             {/* National Helpline */}
             <div className="utility-helpline">
               <span className="helpline-icon">📞</span>
-              <span>Toll Free: <strong>1800-180-0101</strong> / <strong>1913</strong></span>
+              <span>Helpline: <strong>1913</strong></span>
             </div>
 
             <span className="utility-separator">|</span>
 
             {/* Accessibility Controls */}
-            <div className="accessibility-tools">
+            <div className="accessibility-tools hide-mobile">
               <button
                 className={`font-tool-btn ${fontSize === "small" ? "active" : ""}`}
                 onClick={() => handleFontSizeChange("small")}
@@ -98,11 +103,11 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
                 onClick={toggleContrast}
                 title="Toggle High Contrast"
               >
-                {highContrast ? "Standard" : "Contrast"}
+                {highContrast ? "Normal" : "Contrast"}
               </button>
             </div>
 
-            <span className="utility-separator">|</span>
+            <span className="utility-separator hide-mobile">|</span>
 
             {/* Language Selector */}
             <div className="gov-lang-switch">
@@ -110,7 +115,7 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
                 className={`lang-btn ${lang === "EN" ? "active" : ""}`}
                 onClick={() => setLang("EN")}
               >
-                English
+                EN
               </button>
               <span>/</span>
               <button
@@ -121,11 +126,11 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
               </button>
             </div>
 
-            <span className="utility-separator">|</span>
+            <span className="utility-separator hide-mobile">|</span>
 
             {/* Live Clock */}
-            <div className="gov-live-clock">
-              <span>{currentDate || "Live Telemetry"}</span>
+            <div className="gov-live-clock hide-mobile">
+              <span>{currentDate || "Live"}</span>
             </div>
           </div>
         </div>
@@ -134,24 +139,24 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
       {/* 3. Main Government Brand Header */}
       <div className="gov-main-brand-header">
         <div className="gov-container brand-inner">
-          <div className="brand-left" onClick={() => navigateTo("home")} style={{ cursor: "pointer" }}>
-            <NationalEmblem size={52} />
+          <div className="brand-left" onClick={() => handleNavClick("home")} style={{ cursor: "pointer" }}>
+            <NationalEmblem size={46} className="header-emblem-shrink" />
             <div className="gov-title-group">
               <div className="gov-ministry-en">
-                Ministry of Housing and Urban Affairs • Government of India
+                Ministry of Housing & Urban Affairs &bull; Govt. of India
               </div>
               <div className="gov-ministry-hi">
-                आवासन एवं शहरी कार्य मंत्रालय • ग्रेटर नोएडा प्राधिकरण
+                आवासन एवं शहरी कार्य मंत्रालय &bull; ग्रेटर नोएडा
               </div>
               <div className="gov-portal-heading">
                 <span className="portal-acronym">IN-PACT</span>
                 <span className="portal-pipe">|</span>
-                <span className="portal-fullname">Integrated National Public Action & Grievance Redressal Portal</span>
+                <span className="portal-fullname">Integrated Grievance Redressal Portal</span>
               </div>
             </div>
           </div>
 
-          <div className="brand-right">
+          <div className="brand-right hide-tablet">
             <div className="sih-mission-box">
               <div className="sih-emblem-badge">
                 <span className="sih-star">★</span> SMART CITIES MISSION
@@ -159,21 +164,30 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
               <div className="sih-sub">e-Governance & Digital India Initiative</div>
             </div>
           </div>
+
+          {/* Mobile Hamburger Button */}
+          <button
+            className="mobile-hamburger-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle navigation menu"
+          >
+            <span className="hamburger-icon">{mobileMenuOpen ? "✕" : "☰"}</span>
+          </button>
         </div>
       </div>
 
       {/* 4. Primary Government Navigation Bar */}
-      <nav className="gov-nav-bar">
+      <nav className={`gov-nav-bar ${mobileMenuOpen ? "mobile-open" : ""}`}>
         <div className="gov-container nav-inner">
           <ul className="gov-nav-menu">
             <li className={`gov-nav-item ${currentPage === "home" ? "active" : ""}`}>
-              <button className="gov-nav-link" onClick={() => navigateTo("home")}>
+              <button className="gov-nav-link" onClick={() => handleNavClick("home")}>
                 <span className="nav-home-icon">🏠</span> Home
               </button>
             </li>
 
             <li className={`gov-nav-item ${currentPage === "citizen-dashboard" ? "active" : ""}`}>
-              <button className="gov-nav-link" onClick={() => navigateTo("citizen-dashboard")}>
+              <button className="gov-nav-link" onClick={() => handleNavClick("citizen-dashboard")}>
                 Lodge Grievance
               </button>
             </li>
@@ -183,6 +197,7 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
                 className="gov-nav-link"
                 onClick={() => {
                   if (currentPage !== "home") navigateTo("home");
+                  setMobileMenuOpen(false);
                   setTimeout(() => {
                     document.getElementById("tracker-section")?.scrollIntoView({ behavior: "smooth" });
                   }, 100);
@@ -197,12 +212,13 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
                 className="gov-nav-link"
                 onClick={() => {
                   if (currentPage !== "home") navigateTo("home");
+                  setMobileMenuOpen(false);
                   setTimeout(() => {
                     document.getElementById("citizen-charter")?.scrollIntoView({ behavior: "smooth" });
                   }, 100);
                 }}
               >
-                Citizen Charter & SLAs
+                Citizen Charter
               </button>
             </li>
 
@@ -211,6 +227,7 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
                 className="gov-nav-link"
                 onClick={() => {
                   if (currentPage !== "home") navigateTo("home");
+                  setMobileMenuOpen(false);
                   setTimeout(() => {
                     document.getElementById("nodal-officers")?.scrollIntoView({ behavior: "smooth" });
                   }, 100);
@@ -232,34 +249,36 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
                   </span>
                 </div>
 
-                <button
-                  className="gov-dash-jump-btn"
-                  onClick={() =>
-                    navigateTo(
-                      currentUser.role === "admin" ? "gov-dashboard" : "citizen-dashboard"
-                    )
-                  }
-                >
-                  {currentPage.includes("dashboard") ? "In Dashboard" : "Go to Dashboard"}
-                </button>
+                <div className="user-actions-mobile-row">
+                  <button
+                    className="gov-dash-jump-btn"
+                    onClick={() =>
+                      handleNavClick(
+                        currentUser.role === "admin" ? "gov-dashboard" : "citizen-dashboard"
+                      )
+                    }
+                  >
+                    {currentPage.includes("dashboard") ? "Dashboard" : "Go to Dashboard"}
+                  </button>
 
-                <button className="gov-logout-btn" onClick={onLogout} title="Logout of Session">
-                  Logout
-                </button>
+                  <button className="gov-logout-btn" onClick={onLogout} title="Logout of Session">
+                    Logout
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="gov-auth-btn-group">
                 <button
                   className={`gov-btn-citizen ${currentPage === "citizen-login" ? "active" : ""}`}
-                  onClick={() => navigateTo("citizen-login")}
+                  onClick={() => handleNavClick("citizen-login")}
                 >
-                  <span className="btn-icon">👤</span> Citizen Portal (जनता)
+                  <span className="btn-icon">👤</span> Citizen Login (जनता)
                 </button>
                 <button
                   className={`gov-btn-officer ${currentPage === "gov-login" ? "active" : ""}`}
-                  onClick={() => navigateTo("gov-login")}
+                  onClick={() => handleNavClick("gov-login")}
                 >
-                  <span className="btn-icon">🏛️</span> Officer Login (अधिकारी)
+                  <span className="btn-icon">🏛️</span> Officer SSO (अधिकारी)
                 </button>
               </div>
             )}
