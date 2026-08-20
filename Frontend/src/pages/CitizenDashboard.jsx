@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import StatCard from "../components/StatCard";
 import IssueCard from "../components/IssueCard";
 import MapView from "../components/MapView";
+import { getMyIssues, getIssues, createIssue, toggleUpvote, getStats } from "../services/issuesService";
 
 export default function CitizenDashboard({ currentUser, navigateTo }) {
   const [activeTab, setActiveTab] = useState("overview"); // overview | report | track | map | community
@@ -21,161 +22,103 @@ export default function CitizenDashboard({ currentUser, navigateTo }) {
   const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
   const [generatedRefId, setGeneratedRefId] = useState("");
+  const [formError, setFormError] = useState(null);
 
-  // Citizen's personal tracked grievances
-  const [myGrievances, setMyGrievances] = useState([
-    {
-      id: "UP-GND-2026-8091",
-      title: "Major Pothole & Cave-in on Main Commercial Road",
-      description: "Severe 2-foot deep road depression causing frequent two-wheeler skids and traffic jams during peak hours.",
-      category: "Roads & Potholes",
-      department: "Public Works Department (PWD - Division 2)",
-      severity: "high",
-      status: "in_progress",
-      location: "Knowledge Park III, Greater Noida",
-      timestamp: "20 Aug 2026, 10:15 AM",
-      upvotes: 42,
-      hasUpvoted: true,
-      aiConfidence: 96,
-      slaRemaining: "18 hrs left",
-      assignedOfficer: "Er. S.K. Sharma (EE, PWD)",
-      timeline: [
-        { time: "10:15 AM", label: "Complaint Registered via Citizen Portal (Ref: UP-GND-2026-8091)", done: true },
-        { time: "10:16 AM", label: "Automated AI Triaged & Classified: High Severity", done: true },
-        { time: "10:22 AM", label: "Auto-Routed & Assigned to PWD Executive Engineer Division 2", done: true },
-        { time: "01:30 PM", label: "Field Inspection Crew Dispatched (Team Lead: Er. Verma)", done: true },
-        { time: "Pending", label: "Bitumen Patchwork & Surface Levelling Execution", done: false },
-        { time: "Pending", label: "Citizen Verification & Formal Closure", done: false }
-      ]
-    },
-    {
-      id: "UP-GND-2026-7840",
-      title: "Overflowing Garbage Dump near Sector 12 Market",
-      description: "Sanitation waste accumulating for 4 days, blocking pedestrian footpath and attracting stray cattle.",
-      category: "Waste Management",
-      department: "GNIDA Health & Sanitation Division",
-      severity: "medium",
-      status: "resolved",
-      location: "Sector 12 Market Gate 2",
-      timestamp: "19 Aug 2026, 04:30 PM",
-      upvotes: 18,
-      hasUpvoted: false,
-      aiConfidence: 94,
-      slaRemaining: "Resolved in 22 hrs",
-      assignedOfficer: "Dr. Vinod Pathak (Sanitary Inspector)",
-      timeline: [
-        { time: "19 Aug 04:30 PM", label: "Complaint Registered via Portal", done: true },
-        { time: "19 Aug 04:31 PM", label: "AI Categorized as Sanitation - Organic Solid Waste", done: true },
-        { time: "19 Aug 05:00 PM", label: "Assigned to Waste Compactor Squad Route 4", done: true },
-        { time: "20 Aug 09:00 AM", label: "Trash Cleared & Bleaching Disinfection Applied", done: true },
-        { time: "20 Aug 09:15 AM", label: "Resolution Photo Verified by Citizen AI", done: true }
-      ]
-    }
-  ]);
+  // Citizen's personal tracked grievances — now fetched from the real backend
+  const [myGrievances, setMyGrievances] = useState([]);
+  const [loadingMy, setLoadingMy] = useState(true);
+  const [myError, setMyError] = useState(null);
 
-  // Community grievances feed
-  const [communityGrievances, setCommunityGrievances] = useState([
-    {
-      id: "UP-GND-2026-8104",
-      title: "High Tension Power Cable Sparking near Primary School",
-      description: "Exposed overhead cable producing electric sparks during mild wind. High hazard risk for students.",
-      category: "Electricity & Power",
-      department: "NPCL Power Distribution",
-      severity: "critical",
-      status: "in_progress",
-      location: "Alpha 1 Commercial Belt",
-      timestamp: "2 hours ago",
-      upvotes: 89,
-      hasUpvoted: false,
-      aiConfidence: 98,
-      slaRemaining: "3 hrs left"
-    },
-    {
-      id: "UP-GND-2026-8072",
-      title: "Broken Water Supply Main Line with Low Pressure in Homes",
-      description: "Underground pipe burst flooding the street, leading to zero drinking water supply in Block C.",
-      category: "Water Supply",
-      department: "UP Jal Nigam",
-      severity: "high",
-      status: "triaged",
-      location: "Delta 2 Residential Area",
-      timestamp: "5 hours ago",
-      upvotes: 56,
-      hasUpvoted: false,
-      aiConfidence: 95,
-      slaRemaining: "12 hrs left"
-    },
-    {
-      id: "UP-GND-2026-7995",
-      title: "Non-Functional Streetlight Cluster along 1.5km Arterial Road",
-      description: "Complete dark stretch creating severe accident risk and safety concerns for night commuters.",
-      category: "Street Lighting",
-      department: "NPCL / Electrical Wing",
-      severity: "medium",
-      status: "triaged",
-      location: "Sector Beta 2 Main Boulevard",
-      timestamp: "Yesterday",
-      upvotes: 34,
-      hasUpvoted: false,
-      aiConfidence: 93,
-      slaRemaining: "24 hrs left"
-    }
-  ]);
+  // Community grievances feed — now fetched from the real backend
+  const [communityGrievances, setCommunityGrievances] = useState([]);
+  const [loadingCommunity, setLoadingCommunity] = useState(true);
+  const [communityError, setCommunityError] = useState(null);
 
-  const handleUpvote = (id) => {
-    setCommunityGrievances((prev) =>
-      prev.map((g) => {
-        if (g.id === id) {
-          const hasVoted = g.hasUpvoted;
-          return {
-            ...g,
-            upvotes: hasVoted ? g.upvotes - 1 : g.upvotes + 1,
-            hasUpvoted: !hasVoted
-          };
-        }
-        return g;
-      })
-    );
+  // Ward-level resolution rate stat
+  const [wardStats, setWardStats] = useState(null);
+
+  // Maps a raw backend Issue object to what this component's JSX expects:
+  // adds `id` (aliasing _id, so IssueCard's internal `id` destructuring still
+  // works unchanged) while keeping `refId` around for the human-readable badges.
+  const mapIssue = (issue) => ({ ...issue, id: issue._id });
+
+  const loadMyGrievances = () => {
+    setLoadingMy(true);
+    setMyError(null);
+    getMyIssues()
+      .then((issues) => setMyGrievances(issues.map(mapIssue)))
+      .catch((err) => setMyError(err.message))
+      .finally(() => setLoadingMy(false));
   };
 
-  const handleLodgeGrievance = (e) => {
+  const loadCommunityFeed = () => {
+    setLoadingCommunity(true);
+    setCommunityError(null);
+    // TODO: exclude the citizen's own issues once the backend supports an
+    // "exclude mine" filter — for now this shows everyone's issues, including yours.
+    getIssues()
+      .then((issues) => setCommunityGrievances(issues.map(mapIssue)))
+      .catch((err) => setCommunityError(err.message))
+      .finally(() => setLoadingCommunity(false));
+  };
+
+  useEffect(() => {
+    loadMyGrievances();
+    loadCommunityFeed();
+    if (currentUser?.ward) {
+      getStats(currentUser.ward)
+        .then((stats) => setWardStats(stats.ward))
+        .catch(() => { }); // non-critical — the card just falls back to a placeholder
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleUpvote = async (id) => {
+    // Optimistic update so the UI feels instant, then reconcile with the real response
+    setCommunityGrievances((prev) =>
+      prev.map((g) =>
+        g.id === id ? { ...g, upvotes: g.hasUpvoted ? g.upvotes - 1 : g.upvotes + 1, hasUpvoted: !g.hasUpvoted } : g
+      )
+    );
+    try {
+      const result = await toggleUpvote(id);
+      setCommunityGrievances((prev) =>
+        prev.map((g) => (g.id === id ? { ...g, upvotes: result.upvotes, hasUpvoted: result.hasUpvoted } : g))
+      );
+    } catch (err) {
+      // Revert on failure
+      setCommunityGrievances((prev) =>
+        prev.map((g) =>
+          g.id === id ? { ...g, upvotes: g.hasUpvoted ? g.upvotes - 1 : g.upvotes + 1, hasUpvoted: !g.hasUpvoted } : g
+        )
+      );
+      alert(`Couldn't register your upvote: ${err.message}`);
+    }
+  };
+
+  const handleLodgeGrievance = async (e) => {
     e.preventDefault();
     if (!formTitle || !formDescription) return;
 
     setIsAiAnalyzing(true);
-    const newRefId = `UP-GND-2026-${Math.floor(8100 + Math.random() * 900)}`;
+    setFormError(null);
 
-    setTimeout(() => {
-      setIsAiAnalyzing(false);
-      setGeneratedRefId(newRefId);
-      setSubmissionSuccess(true);
-
-      const newGrievance = {
-        id: newRefId,
+    try {
+      const newIssue = await createIssue({
         title: formTitle,
         description: formDescription,
         category: formCategory,
-        department: formDepartment,
         severity: formUrgency,
-        status: "triaged",
-        location: formLocation,
-        timestamp: "Just now (Today)",
-        upvotes: 1,
-        hasUpvoted: true,
-        aiConfidence: 97,
-        slaRemaining: formUrgency === "critical" ? "6 hrs left" : "24 hrs left",
-        assignedOfficer: "Er. S.K. Sharma (Nodal Officer)",
-        timeline: [
-          { time: "Just now", label: `Complaint Logged via Portal (Ref: ${newRefId})`, done: true },
-          { time: "Just now", label: "Automated Classification: High Priority", done: true },
-          { time: "1 min ago", label: `Assigned to Nodal Officer (${formDepartment})`, done: true },
-          { time: "Pending", label: "Field Squad Inspection & Execution", done: false },
-          { time: "Pending", label: "Citizen Verification & Closure", done: false }
-        ]
-      };
+        location: { address: formLocation, ward: formWard },
+      });
 
-      setMyGrievances([newGrievance, ...myGrievances]);
-    }, 600);
+      setGeneratedRefId(newIssue.refId);
+      setSubmissionSuccess(true);
+      setMyGrievances((prev) => [mapIssue(newIssue), ...prev]);
+    } catch (err) {
+      setFormError(err.message);
+    } finally {
+      setIsAiAnalyzing(false);
+    }
   };
 
   const handleResetForm = () => {
@@ -227,109 +170,123 @@ export default function CitizenDashboard({ currentUser, navigateTo }) {
           {/* TAB 1: OVERVIEW */}
           {activeTab === "overview" && (
             <div className="dash-tab-content">
-              {/* Profile Stat Summary Cards */}
-              <div className="dash-stats-row">
-                <StatCard
-                  title="My Total Grievances"
-                  value={myGrievances.length.toString()}
-                  subtitle="Complaints registered"
-                  icon="📋"
-                  trend="100% digitally tracked"
-                  trendPositive={true}
-                />
-                <StatCard
-                  title="In Progress / Triaged"
-                  value={myGrievances.filter((g) => g.status !== "resolved").length.toString()}
-                  subtitle="Under field action"
-                  icon="⏳"
-                  trend="Within Statutory SLA"
-                  trendPositive={true}
-                  variant="warning"
-                />
-                <StatCard
-                  title="Resolved & Verified"
-                  value={myGrievances.filter((g) => g.status === "resolved").length.toString()}
-                  subtitle="Closed with photo proof"
-                  icon="✅"
-                  trend="Citizen verified"
-                  trendPositive={true}
-                  variant="success"
-                />
-                <StatCard
-                  title="Ward 12 Resolution Rate"
-                  value="96.4%"
-                  subtitle="Greater Noida zone benchmark"
-                  icon="🏆"
-                  trend="Top performing ward"
-                  trendPositive={true}
-                  variant="purple"
-                />
-              </div>
-
-              {/* Quick Action Banner */}
-              <div className="gov-action-callout">
-                <div className="callout-text">
-                  <h3>Notice a civic hazard in your sector or ward?</h3>
-                  <p>Lodge a new grievance with geotagged photo proof. Automated triaging will allocate it to the Nodal Engineer in seconds.</p>
-                </div>
-                <button className="gov-btn-primary" onClick={() => setActiveTab("report")}>
-                  + Lodge New Grievance (शिकायत दर्ज करें)
-                </button>
-              </div>
-
-              {/* Active Grievances Tracker */}
-              <div className="gov-card dash-card">
-                <div className="dash-card-header">
-                  <div className="card-title-group">
-                    <span className="card-icon">🔎</span>
-                    <div>
-                      <h3>Active Grievance Redressal Status</h3>
-                      <p>Real-time lifecycle tracking of your registered complaints</p>
-                    </div>
+              {loadingMy ? (
+                <div className="gov-card dash-card">Loading your grievances…</div>
+              ) : myError ? (
+                <div className="gov-card dash-card">Couldn't load your grievances: {myError}</div>
+              ) : (
+                <>
+                  {/* Profile Stat Summary Cards */}
+                  <div className="dash-stats-row">
+                    <StatCard
+                      title="My Total Grievances"
+                      value={myGrievances.length.toString()}
+                      subtitle="Complaints registered"
+                      icon="📋"
+                      trend="100% digitally tracked"
+                      trendPositive={true}
+                    />
+                    <StatCard
+                      title="In Progress / Triaged"
+                      value={myGrievances.filter((g) => g.status !== "resolved").length.toString()}
+                      subtitle="Under field action"
+                      icon="⏳"
+                      trend="Within Statutory SLA"
+                      trendPositive={true}
+                      variant="warning"
+                    />
+                    <StatCard
+                      title="Resolved & Verified"
+                      value={myGrievances.filter((g) => g.status === "resolved").length.toString()}
+                      subtitle="Closed with photo proof"
+                      icon="✅"
+                      trend="Citizen verified"
+                      trendPositive={true}
+                      variant="success"
+                    />
+                    <StatCard
+                      title={wardStats?.name ? `${wardStats.name} Resolution Rate` : "Ward Resolution Rate"}
+                      value={wardStats?.resolutionRate != null ? `${wardStats.resolutionRate}%` : "—"}
+                      subtitle="Greater Noida zone benchmark"
+                      icon="🏆"
+                      trend="Top performing ward"
+                      trendPositive={true}
+                      variant="purple"
+                    />
                   </div>
-                  <button className="text-btn" onClick={() => setActiveTab("track")}>
-                    View All Grievances ({myGrievances.length}) →
-                  </button>
-                </div>
 
-                <div className="active-grievances-list">
-                  {myGrievances.map((g) => (
-                    <div key={g.id} className="grievance-row-card">
-                      <div className="g-row-left">
-                        <div className="g-ref-line">
-                          <span className="g-ref-badge">{g.id}</span>
-                          <span className={`priority-badge priority-${g.severity}`}>
-                            {g.severity.toUpperCase()} PRIORITY
-                          </span>
-                          <span className="g-dept-text">🏢 {g.department}</span>
-                        </div>
-                        <h4 className="g-title">{g.title}</h4>
-                        <p className="g-desc">{g.description}</p>
-                        <div className="g-meta-row">
-                          <span>📍 {g.location}</span>
-                          <span>🕒 {g.timestamp}</span>
-                          <span className="sla-pill">⏳ {g.slaRemaining}</span>
-                        </div>
-                      </div>
-
-                      <div className="g-row-right">
-                        <span className={`status-badge-block ${g.status === "resolved" ? "status-resolved" : "status-progress"}`}>
-                          {g.status === "resolved" ? "✅ Resolved & Closed" : "⚡ In Progress (Field Action)"}
-                        </span>
-                        <button
-                          className="gov-btn-outline-sm"
-                          onClick={() => {
-                            setSelectedIssue(g);
-                            setActiveTab("track");
-                          }}
-                        >
-                          View Audit Trail & Receipt →
-                        </button>
-                      </div>
+                  {/* Quick Action Banner */}
+                  <div className="gov-action-callout">
+                    <div className="callout-text">
+                      <h3>Notice a civic hazard in your sector or ward?</h3>
+                      <p>Lodge a new grievance with geotagged photo proof. Automated triaging will allocate it to the Nodal Engineer in seconds.</p>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <button className="gov-btn-primary" onClick={() => setActiveTab("report")}>
+                      + Lodge New Grievance (शिकायत दर्ज करें)
+                    </button>
+                  </div>
+
+                  {/* Active Grievances Tracker */}
+                  <div className="gov-card dash-card">
+                    <div className="dash-card-header">
+                      <div className="card-title-group">
+                        <span className="card-icon">🔎</span>
+                        <div>
+                          <h3>Active Grievance Redressal Status</h3>
+                          <p>Real-time lifecycle tracking of your registered complaints</p>
+                        </div>
+                      </div>
+                      <button className="text-btn" onClick={() => setActiveTab("track")}>
+                        View All Grievances ({myGrievances.length}) →
+                      </button>
+                    </div>
+
+                    {myGrievances.length === 0 ? (
+                      <p style={{ padding: "16px" }}>
+                        You haven't filed any grievances yet. Use "Lodge New Grievance" above to file your first one.
+                      </p>
+                    ) : (
+                      <div className="active-grievances-list">
+                        {myGrievances.map((g) => (
+                          <div key={g.id} className="grievance-row-card">
+                            <div className="g-row-left">
+                              <div className="g-ref-line">
+                                <span className="g-ref-badge">{g.refId}</span>
+                                <span className={`priority-badge priority-${g.severity}`}>
+                                  {g.severity.toUpperCase()} PRIORITY
+                                </span>
+                                <span className="g-dept-text">🏢 {g.department}</span>
+                              </div>
+                              <h4 className="g-title">{g.title}</h4>
+                              <p className="g-desc">{g.description}</p>
+                              <div className="g-meta-row">
+                                <span>📍 {g.location?.address || g.location?.ward || "—"}</span>
+                                <span>🕒 {new Date(g.createdAt).toLocaleString("en-IN")}</span>
+                                <span className="sla-pill">⏳ {g.slaRemaining}</span>
+                              </div>
+                            </div>
+
+                            <div className="g-row-right">
+                              <span className={`status-badge-block ${g.status === "resolved" ? "status-resolved" : "status-progress"}`}>
+                                {g.status === "resolved" ? "✅ Resolved & Closed" : "⚡ In Progress (Field Action)"}
+                              </span>
+                              <button
+                                className="gov-btn-outline-sm"
+                                onClick={() => {
+                                  setSelectedIssue(g);
+                                  setActiveTab("track");
+                                }}
+                              >
+                                View Audit Trail & Receipt →
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           )}
 
@@ -342,19 +299,18 @@ export default function CitizenDashboard({ currentUser, navigateTo }) {
                   <span className="success-badge-official">GRIEVANCE REGISTERED SUCCESSFULLY</span>
                   <h2>Acknowledgement Reference Number: <strong>{generatedRefId}</strong></h2>
                   <p className="success-desc">
-                    Your grievance has been officially registered under the Uttar Pradesh Janhit Guarantee Act and automatically allocated to <strong>{formDepartment}</strong> with an emergency SLA timer.
+                    Your grievance has been officially registered and will be reviewed by a nodal officer with an SLA timer attached.
                   </p>
 
                   <div className="official-receipt-box">
                     <div className="receipt-header">
                       <span>GOVERNMENT OF UTTAR PRADESH • OFFICIAL ACKNOWLEDGEMENT SLIP</span>
-                      <span>DATE: 20 AUG 2026</span>
+                      <span>DATE: {new Date().toLocaleDateString("en-IN")}</span>
                     </div>
                     <div className="receipt-grid">
                       <div><span className="r-label">Grievance Ref ID:</span> <strong>{generatedRefId}</strong></div>
                       <div><span className="r-label">Complainant Name:</span> <strong>{currentUser?.name || "Ananya Sharma"}</strong></div>
-                      <div><span className="r-label">Nodal Department:</span> <strong>{formDepartment}</strong></div>
-                      <div><span className="r-label">Target Redressal SLA:</span> <strong className="text-saffron">6 Hours (Critical)</strong></div>
+                      <div><span className="r-label">Nodal Department:</span> <strong>Pending AI Auto-Routing</strong></div>
                       <div><span className="r-label">GPS Geotag:</span> <span>{formGps}</span></div>
                       <div><span className="r-label">Designated Ward:</span> <span>{formWard}</span></div>
                     </div>
@@ -490,6 +446,12 @@ export default function CitizenDashboard({ currentUser, navigateTo }) {
                       </div>
                     </div>
 
+                    {formError && (
+                      <div className="auth-error-banner" style={{ marginBottom: "12px" }}>
+                        Couldn't submit your grievance: {formError}
+                      </div>
+                    )}
+
                     <div className="form-submit-row">
                       <button type="submit" className="gov-btn-primary-lg" disabled={isAiAnalyzing}>
                         {isAiAnalyzing ? "Verifying & Allocating Nodal Officer..." : "Submit Grievance Officially (शिकायत जमा करें) →"}
@@ -515,75 +477,83 @@ export default function CitizenDashboard({ currentUser, navigateTo }) {
                   </div>
                 </div>
 
-                <div className="grievance-dossier-list">
-                  {myGrievances.map((g) => (
-                    <div key={g.id} className="dossier-card">
-                      <div className="dossier-top">
-                        <div className="dossier-ref-group">
-                          <span className="dossier-ref-pill">{g.id}</span>
-                          <span className={`priority-badge priority-${g.severity}`}>
-                            {g.severity.toUpperCase()} PRIORITY
+                {loadingMy ? (
+                  <p style={{ padding: "16px" }}>Loading…</p>
+                ) : myError ? (
+                  <p style={{ padding: "16px" }}>Couldn't load your grievances: {myError}</p>
+                ) : myGrievances.length === 0 ? (
+                  <p style={{ padding: "16px" }}>No grievances filed yet.</p>
+                ) : (
+                  <div className="grievance-dossier-list">
+                    {myGrievances.map((g) => (
+                      <div key={g.id} className="dossier-card">
+                        <div className="dossier-top">
+                          <div className="dossier-ref-group">
+                            <span className="dossier-ref-pill">{g.refId}</span>
+                            <span className={`priority-badge priority-${g.severity}`}>
+                              {g.severity.toUpperCase()} PRIORITY
+                            </span>
+                            <span className="dossier-dept">🏢 {g.department}</span>
+                          </div>
+                          <span className={`status-badge-inline ${g.status === "resolved" ? "status-resolved" : "status-progress"}`}>
+                            {g.status === "resolved" ? "Closed & Verified" : "In Progress"}
                           </span>
-                          <span className="dossier-dept">🏢 {g.department}</span>
                         </div>
-                        <span className={`status-badge-inline ${g.status === "resolved" ? "status-resolved" : "status-progress"}`}>
-                          {g.status === "resolved" ? "Closed & Verified" : "In Progress"}
-                        </span>
-                      </div>
 
-                      <h4 className="dossier-title">{g.title}</h4>
-                      <p className="dossier-desc">{g.description}</p>
+                        <h4 className="dossier-title">{g.title}</h4>
+                        <p className="dossier-desc">{g.description}</p>
 
-                      <div className="dossier-meta-grid">
-                        <div>
-                          <span className="m-label">Registered Location:</span>
-                          <span>{g.location}</span>
-                        </div>
-                        <div>
-                          <span className="m-label">Assigned Nodal Officer:</span>
-                          <strong>{g.assignedOfficer || "Er. S.K. Sharma"}</strong>
-                        </div>
-                        <div>
-                          <span className="m-label">Statutory Target SLA:</span>
-                          <strong className="text-saffron">{g.slaRemaining}</strong>
-                        </div>
-                        <div>
-                          <span className="m-label">Registered Timestamp:</span>
-                          <span>{g.timestamp}</span>
-                        </div>
-                      </div>
-
-                      {/* Official Timeline */}
-                      {g.timeline && (
-                        <div className="dossier-timeline-section">
-                          <span className="timeline-section-title">Official Action & Resolution Audit Trail:</span>
-                          <div className="timeline-steps">
-                            {g.timeline.map((step, idx) => (
-                              <div key={idx} className={`timeline-step-item ${step.done ? "completed" : "pending"}`}>
-                                <div className="step-bullet">{step.done ? "✓" : "○"}</div>
-                                <div className="step-details">
-                                  <span className="step-time">{step.time}</span>
-                                  <span className="step-desc">{step.label}</span>
-                                </div>
-                              </div>
-                            ))}
+                        <div className="dossier-meta-grid">
+                          <div>
+                            <span className="m-label">Registered Location:</span>
+                            <span>{g.location?.address || g.location?.ward || "—"}</span>
+                          </div>
+                          <div>
+                            <span className="m-label">Assigned Nodal Officer:</span>
+                            <strong>{g.assignedOfficer || "Not yet assigned"}</strong>
+                          </div>
+                          <div>
+                            <span className="m-label">Statutory Target SLA:</span>
+                            <strong className="text-saffron">{g.slaRemaining}</strong>
+                          </div>
+                          <div>
+                            <span className="m-label">Registered Timestamp:</span>
+                            <span>{new Date(g.createdAt).toLocaleString("en-IN")}</span>
                           </div>
                         </div>
-                      )}
 
-                      <div className="dossier-footer-actions">
-                        <button className="gov-btn-outline-sm" onClick={() => window.print()}>
-                          🖨️ Print Acknowledgement Receipt
-                        </button>
-                        {g.status === "in_progress" && (
-                          <span className="esc-notice">
-                            ℹ️ Eligible for District Magistrate escalation if unresolved past SLA
-                          </span>
+                        {/* Official Timeline */}
+                        {g.timeline && (
+                          <div className="dossier-timeline-section">
+                            <span className="timeline-section-title">Official Action & Resolution Audit Trail:</span>
+                            <div className="timeline-steps">
+                              {g.timeline.map((step, idx) => (
+                                <div key={idx} className={`timeline-step-item ${step.done ? "completed" : "pending"}`}>
+                                  <div className="step-bullet">{step.done ? "✓" : "○"}</div>
+                                  <div className="step-details">
+                                    <span className="step-time">{step.time}</span>
+                                    <span className="step-desc">{step.label}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         )}
+
+                        <div className="dossier-footer-actions">
+                          <button className="gov-btn-outline-sm" onClick={() => window.print()}>
+                            🖨️ Print Acknowledgement Receipt
+                          </button>
+                          {g.status === "in_progress" && (
+                            <span className="esc-notice">
+                              ℹ️ Eligible for District Magistrate escalation if unresolved past SLA
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -620,19 +590,27 @@ export default function CitizenDashboard({ currentUser, navigateTo }) {
                   </div>
                 </div>
 
-                <div className="community-list">
-                  {communityGrievances.map((item) => (
-                    <IssueCard
-                      key={item.id}
-                      issue={item}
-                      onUpvote={handleUpvote}
-                      onSelect={(iss) => {
-                        setSelectedIssue(iss);
-                        setActiveTab("track");
-                      }}
-                    />
-                  ))}
-                </div>
+                {loadingCommunity ? (
+                  <p style={{ padding: "16px" }}>Loading community feed…</p>
+                ) : communityError ? (
+                  <p style={{ padding: "16px" }}>Couldn't load community feed: {communityError}</p>
+                ) : communityGrievances.length === 0 ? (
+                  <p style={{ padding: "16px" }}>No community grievances reported yet.</p>
+                ) : (
+                  <div className="community-list">
+                    {communityGrievances.map((item) => (
+                      <IssueCard
+                        key={item.id}
+                        issue={item}
+                        onUpvote={handleUpvote}
+                        onSelect={(iss) => {
+                          setSelectedIssue(iss);
+                          setActiveTab("track");
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}

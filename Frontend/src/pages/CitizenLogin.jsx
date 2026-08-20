@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { NationalEmblem } from "../components/GovEmblem";
+import { login } from "../services/authService";
 
 export default function CitizenLogin({ onLogin, navigateTo }) {
   const [authMode, setAuthMode] = useState("otp"); // 'otp' | 'digilocker' | 'email'
   const [mobileNumber, setMobileNumber] = useState("9876543210");
   const [email, setEmail] = useState("ananya.sharma@example.com");
   const [password, setPassword] = useState("••••••••");
+  const [error, setError] = useState(null);
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState("input"); // 'input' | 'otp'
   const [loading, setLoading] = useState(false);
@@ -70,23 +72,19 @@ export default function CitizenLogin({ onLogin, navigateTo }) {
     }, 400);
   };
 
-  const handleEmailLogin = (e) => {
+  const handleEmailLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      onLogin({
-        id: "CIT-UP-8821",
-        name: "Ananya Sharma",
-        role: "citizen",
-        email: email,
-        phone: "+91 " + mobileNumber,
-        ward: "Ward 12, Knowledge Park, Greater Noida",
-        verified: true,
-        authType: "Citizen e-Gov Account"
-      });
+    setError(null);
+    try {
+      const user = await login(email, password);
+      onLogin(user);
       navigateTo("citizen-dashboard");
-    }, 400);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDigiLockerLogin = () => {
@@ -319,7 +317,7 @@ export default function CitizenLogin({ onLogin, navigateTo }) {
                     required
                   />
                 </div>
-
+                {error && <div className="auth-error-banner">{error}</div>}
                 <button type="submit" className="gov-btn-primary-block" disabled={loading}>
                   {loading ? "Signing in..." : "Login to Citizen Portal (लॉगिन करें) →"}
                 </button>

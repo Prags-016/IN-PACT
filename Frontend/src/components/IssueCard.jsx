@@ -24,106 +24,113 @@ export default function IssueCard({
     slaRemaining
   } = issue;
 
-  const severityConfig = {
-    critical: { label: "Critical (Emergency)", class: "priority-critical" },
-    high: { label: "High Priority", class: "priority-high" },
-    medium: { label: "Moderate", class: "priority-medium" },
-    low: { label: "Low Priority", class: "priority-low" }
+  // `location` is a plain string in older mock data, but the real backend
+  // returns an object shaped { address, ward, lat, lng }. Handle both so this
+  // component works whether it's fed mock data or live API data.
+  const locationText =
+    typeof location === "string"
+      ? location
+      : location?.address || location?.ward || "Location not specified";
+
+  const severityColors = {
+    critical: { label: "Critical Priority", class: "severity-critical" },
+    high: { label: "High Severity", class: "severity-high" },
+    medium: { label: "Moderate", class: "severity-medium" },
+    low: { label: "Low Priority", class: "severity-low" }
   };
 
-  const statusConfig = {
-    submitted: { text: "Registered / Triaging", class: "status-submitted" },
-    triaged: { text: "Assigned to Nodal Officer", class: "status-triaged" },
-    in_progress: { text: "In Progress (Field Action)", class: "status-progress" },
-    resolved: { text: "Resolved & Closed", class: "status-resolved" }
+  const statusLabels = {
+    submitted: { text: "AI Triaging", class: "status-submitted" },
+    triaged: { text: "Dept Assigned", class: "status-triaged" },
+    in_progress: { text: "Work In Progress", class: "status-progress" },
+    resolved: { text: "Resolved & Verified", class: "status-resolved" }
   };
 
-  const currentSeverity = severityConfig[severity.toLowerCase()] || severityConfig.medium;
-  const currentStatus = statusConfig[status.toLowerCase()] || statusConfig.in_progress;
+  const currentSeverity = severityColors[severity.toLowerCase()] || severityColors.medium;
+  const currentStatus = statusLabels[status.toLowerCase()] || statusLabels.in_progress;
 
   return (
-    <div className={`gov-issue-card severity-edge-${severity.toLowerCase()}`}>
-      <div className="gov-issue-top">
-        <div className="issue-ref-tags">
-          <span className="gov-ref-pill">{id}</span>
-          <span className={`priority-badge ${currentSeverity.class}`}>
-            {currentSeverity.label}
+    <div className={`issue-card ${severity.toLowerCase()}`}>
+      <div className="issue-card-top">
+        <div className="issue-tags">
+          <span className={`badge-severity ${currentSeverity.class}`}>
+            ● {currentSeverity.label}
           </span>
-          <span className="dept-tag">🏢 {department || "Nodal Department"}</span>
-          <span className="cat-tag">{category}</span>
+          <span className="badge-dept">🏢 {department || "Auto-Routing"}</span>
+          <span className="badge-cat">{category}</span>
         </div>
 
-        <span className={`status-badge-inline ${currentStatus.class}`}>
+        <div className={`status-pill ${currentStatus.class}`}>
           {currentStatus.text}
-        </span>
+        </div>
       </div>
 
-      <h4 className="gov-issue-title" onClick={() => onSelect && onSelect(issue)}>
+      <h4 className="issue-title" onClick={() => onSelect && onSelect(issue)}>
         {title}
       </h4>
 
-      <p className="gov-issue-desc">{description}</p>
+      <p className="issue-desc">{description}</p>
 
       {imageUrl && (
-        <div className="gov-issue-image-box">
-          <img src={imageUrl} alt="Official grievance attachment" className="issue-photo" />
+        <div className="issue-image-container">
+          <img src={imageUrl} alt="Grievance attachment" className="issue-thumbnail" />
         </div>
       )}
 
-      <div className="gov-issue-meta">
-        <div className="meta-block">
-          <span className="m-icon">📍</span>
-          <span>{location}</span>
+      <div className="issue-meta">
+        <div className="meta-item">
+          <span className="meta-icon">📍</span>
+          <span className="meta-text">{locationText}</span>
         </div>
-        <div className="meta-block">
-          <span className="m-icon">🕒</span>
-          <span>{timestamp || "Just now"}</span>
+        <div className="meta-item">
+          <span className="meta-icon">🕒</span>
+          <span className="meta-text">{timestamp || "Just now"}</span>
         </div>
         {slaRemaining && (
-          <div className="meta-block sla-block">
-            <span className="m-icon">⏳</span>
-            <strong>SLA: {slaRemaining}</strong>
+          <div className="meta-item sla-warning">
+            <span className="meta-icon">⏳</span>
+            <span className="meta-text">SLA: {slaRemaining}</span>
           </div>
         )}
       </div>
 
-      <div className="gov-issue-footer">
-        <div className="gov-audit-badge" title="National e-Governance AI Triage Verification">
-          <span>⚖️</span> Triage Precision: <strong>{aiConfidence}%</strong>
+      <div className="issue-card-footer">
+        <div className="ai-trust-badge" title="AI Computer Vision & NLP Model Confidence">
+          <span className="sparkle">✨</span> AI Confidence: <strong>{aiConfidence}%</strong>
         </div>
 
-        <div className="gov-issue-actions">
+        <div className="card-actions">
           {onUpvote && (
             <button
-              className={`gov-upvote-btn ${hasUpvoted ? "voted" : ""}`}
+              className={`upvote-btn ${hasUpvoted ? "voted" : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
                 onUpvote(id);
               }}
-              title="Citizen endorsement to elevate priority"
+              title="Endorse this civic issue to increase priority"
             >
-              👍 Support ({upvotes})
+              👍 <span>{upvotes}</span>
             </button>
           )}
 
           {showAdminActions && onStatusChange ? (
             <select
-              className="gov-status-select-sm"
+              className="status-select"
               value={status}
               onChange={(e) => onStatusChange(id, e.target.value)}
               onClick={(e) => e.stopPropagation()}
             >
-              <option value="submitted">Registered</option>
-              <option value="triaged">Assigned to Nodal EE</option>
-              <option value="in_progress">Field Action In Progress</option>
-              <option value="resolved">Resolved & Closed</option>
+              <option value="submitted">Submitted</option>
+              <option value="triaged">Triaged</option>
+              <option value="in_progress">In Progress</option>
+              <option value="resolved">Resolved</option>
             </select>
           ) : (
             <button
-              className="gov-view-details-btn"
+              className="view-details-btn"
               onClick={() => onSelect && onSelect(issue)}
             >
-              View Official Record →
+              View Analysis →
             </button>
           )}
         </div>

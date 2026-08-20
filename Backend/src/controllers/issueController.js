@@ -1,18 +1,30 @@
 const Issue = require("../models/Issue");
 const asyncHandler = require("../middleware/asyncHandler");
-const { ISSUE_STATUSES } = require("../config/constants");
+const { ISSUE_STATUSES, DEPARTMENTS } = require("../config/constants");
 
 // @route  GET /api/issues
 // @query  status, severity, category, department, lat, lng, radiusKm, page, limit
 // @access Public (citizens see all; admins may later get extra fields)
 const getIssues = asyncHandler(async (req, res) => {
-  const { status, severity, category, department, page = 1, limit = 20 } = req.query;
+  const { status, severity, category, department, ward, mine, page = 1, limit = 20 } = req.query;
 
   const filter = {};
   if (status) filter.status = status;
   if (severity) filter.severity = severity;
   if (category) filter.category = category;
   if (department) filter.department = department;
+  if (ward) filter["location.ward"] = ward;
+
+  // ?mine=true — used by CitizenDashboard.jsx's "My Grievances" tab. Requires auth
+  // (optionalAuth still lets the route be public, but this filter only works
+  // for a logged-in user, since it needs req.user).
+  if (mine === "true") {
+    if (!req.user) {
+      res.status(401);
+      throw new Error("Login required to view your own grievances");
+    }
+    filter.reportedBy = req.user._id;
+  }
 
   const skip = (Number(page) - 1) * Number(limit);
 
@@ -80,7 +92,13 @@ const createIssue = asyncHandler(async (req, res) => {
     location,
     imageUrl,
     reportedBy: req.user._id,
-    statusHistory: [{ status: "reported", changedBy: req.user._id }],
+    statusHistory: [
+      {
+        status: "reported",
+        label: "Complaint Registered via Citizen Portal",
+        changedBy: req.user._id,
+      },
+    ],
   });
 
   res.status(201).json({ success: true, issue });
@@ -88,8 +106,13 @@ const createIssue = asyncHandler(async (req, res) => {
 
 // @route  PATCH /api/issues/:id/status
 // @access Private (admin only)
+// body: { status, note, label, assignedOfficer }
+// - `label` is the human-readable timeline entry shown to the citizen
+//   (e.g. "Auto-Routed & Assigned to PWD Executive Engineer"). Falls back to a
+//   generic message built from `status` if omitted.
+// - `assignedOfficer` is optional and only updates the field when provided.
 const updateIssueStatus = asyncHandler(async (req, res) => {
-  const { status, note } = req.body;
+  const { status, note, label, assignedOfficer } = req.body;
 
   if (!ISSUE_STATUSES.includes(status)) {
     res.status(400);
@@ -103,7 +126,13 @@ const updateIssueStatus = asyncHandler(async (req, res) => {
   }
 
   issue.status = status;
-  issue.statusHistory.push({ status, changedBy: req.user._id, note });
+  if (assignedOfficer !== undefined) issue.assignedOfficer = assignedOfficer;
+  issue.statusHistory.push({
+    status,
+    label: label || `Status updated to ${status.replace(/_/g, " ")}`,
+    changedBy: req.user._id,
+    note,
+  });
   await issue.save();
 
   res.json({ success: true, issue });
@@ -137,8 +166,12 @@ const toggleUpvote = asyncHandler(async (req, res) => {
 });
 
 // @route  GET /api/issues/stats
+// @query  ward (optional) — when provided, also returns a resolution rate scoped
+//         to that ward, matching CitizenDashboard.jsx's "Ward N Resolution Rate" card.
 // @access Private (admin) — powers the StatCard widgets on the gov dashboard
 const getIssueStats = asyncHandler(async (req, res) => {
+  const { ward } = req.query;
+
   const [totalActive, critical, resolvedThisMonth, byStatus] = await Promise.all([
     Issue.countDocuments({ status: { $ne: "resolved" } }),
     Issue.countDocuments({ severity: "critical", status: { $ne: "resolved" } }),
@@ -149,15 +182,59 @@ const getIssueStats = asyncHandler(async (req, res) => {
     Issue.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
   ]);
 
-  res.json({
-    success: true,
-    stats: {
-      totalActive,
-      critical,
-      resolvedThisMonth,
-      byStatus: byStatus.reduce((acc, s) => ({ ...acc, [s._id]: s.count }), {}),
-    },
-  });
+  const stats = {
+    totalActive,
+    critical,
+    resolvedThisMonth,
+    byStatus: byStatus.reduce((acc, s) => ({ ...acc, [s._id]: s.count }), {}),
+  };
+
+  if (ward) {
+    const [wardTotal, wardResolved] = await Promise.all([
+      Issue.countDocuments({ "location.ward": ward }),
+      Issue.countDocuments({ "location.ward": ward, status: "resolved" }),
+    ]);
+    stats.ward = {
+      name: ward,
+      resolutionRate: wardTotal > 0 ? Number(((wardResolved / wardTotal) * 100).toFixed(1)) : null,
+    };
+  }
+
+  res.json({ success: true, stats });
+});
+
+// @route  GET /api/issues/stats/departments
+// @access Private (admin) — powers the "Inter-Departmental SLA Compliance
+// Scorecard" table on GovernmentDashboard.jsx (Tab 1: Overview). Replaces the
+// currently hardcoded table rows with real aggregated data.
+const getDepartmentStats = asyncHandler(async (req, res) => {
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+  const rows = await Promise.all(
+    DEPARTMENTS.map(async ({ code, label }) => {
+      const [activeLoad, disposed24h, resolvedTotal, resolvedIssues] = await Promise.all([
+        Issue.countDocuments({ department: code, status: { $ne: "resolved" } }),
+        Issue.countDocuments({ department: code, status: "resolved", updatedAt: { $gte: oneDayAgo } }),
+        Issue.countDocuments({ department: code, status: "resolved" }),
+        // Only need slaDeadline/updatedAt to compute compliance, keep the payload light
+        Issue.find({ department: code, status: "resolved" }).select("slaDeadline updatedAt"),
+      ]);
+
+      const compliantCount = resolvedIssues.filter(
+        (issue) => issue.slaDeadline && issue.updatedAt && issue.updatedAt <= issue.slaDeadline
+      ).length;
+
+      return {
+        code,
+        label,
+        activeLoad,
+        disposed24h,
+        slaCompliance: resolvedTotal > 0 ? Number(((compliantCount / resolvedTotal) * 100).toFixed(1)) : null,
+      };
+    })
+  );
+
+  res.json({ success: true, departments: rows });
 });
 
 module.exports = {
@@ -167,4 +244,5 @@ module.exports = {
   updateIssueStatus,
   toggleUpvote,
   getIssueStats,
+  getDepartmentStats,
 };

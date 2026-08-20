@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { NationalEmblem } from "./GovEmblem";
+import inpactLogo from "../assets/inpact-icon.svg";
+import UserMenu from "./UserMenu";
 
 export default function Navbar({ currentPage, navigateTo, currentUser, onLogout }) {
   const [currentDate, setCurrentDate] = useState("");
   const [lang, setLang] = useState("EN");
-  const [fontSize, setFontSize] = useState("normal"); // 'small' | 'normal' | 'large'
+  const [fontSize, setFontSize] = useState("normal");
   const [highContrast, setHighContrast] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -47,14 +49,12 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
 
   return (
     <header className="gov-header-wrapper">
-      {/* 1. Official Indian Flag Tricolor Ribbon */}
       <div className="gov-tricolor-bar">
         <div className="tri-saffron"></div>
         <div className="tri-white"></div>
         <div className="tri-green"></div>
       </div>
 
-      {/* 2. Top Government Utility & Accessibility Bar */}
       <div className="gov-utility-strip">
         <div className="gov-container utility-inner">
           <div className="utility-left">
@@ -66,7 +66,6 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
           </div>
 
           <div className="utility-right">
-            {/* National Helpline */}
             <div className="utility-helpline">
               <span className="helpline-icon">📞</span>
               <span>Helpline: <strong>1913</strong></span>
@@ -74,7 +73,6 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
 
             <span className="utility-separator">|</span>
 
-            {/* Accessibility Controls */}
             <div className="accessibility-tools hide-mobile">
               <button
                 className={`font-tool-btn ${fontSize === "small" ? "active" : ""}`}
@@ -109,7 +107,6 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
 
             <span className="utility-separator hide-mobile">|</span>
 
-            {/* Language Selector */}
             <div className="gov-lang-switch">
               <button
                 className={`lang-btn ${lang === "EN" ? "active" : ""}`}
@@ -128,7 +125,6 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
 
             <span className="utility-separator hide-mobile">|</span>
 
-            {/* Live Clock */}
             <div className="gov-live-clock hide-mobile">
               <span>{currentDate || "Live"}</span>
             </div>
@@ -136,11 +132,10 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
         </div>
       </div>
 
-      {/* 3. Main Government Brand Header */}
       <div className="gov-main-brand-header">
         <div className="gov-container brand-inner">
           <div className="brand-left" onClick={() => handleNavClick("home")} style={{ cursor: "pointer" }}>
-            <NationalEmblem size={46} className="header-emblem-shrink" />
+            <img src={inpactLogo} alt="IN-PACT emblem" className="header-emblem-shrink" style={{ height: "46px", width: "46px" }} />
             <div className="gov-title-group">
               <div className="gov-ministry-en">
                 Ministry of Housing & Urban Affairs &bull; Govt. of India
@@ -165,7 +160,6 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
             </div>
           </div>
 
-          {/* Mobile Hamburger Button */}
           <button
             className="mobile-hamburger-btn"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -176,7 +170,6 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
         </div>
       </div>
 
-      {/* 4. Primary Government Navigation Bar */}
       <nav className={`gov-nav-bar ${mobileMenuOpen ? "mobile-open" : ""}`}>
         <div className="gov-container nav-inner">
           <ul className="gov-nav-menu">
@@ -240,32 +233,14 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
 
           <div className="gov-nav-auth">
             {currentUser ? (
-              <div className="gov-user-pill">
-                <div className="user-details">
-                  <span className="user-icon">👤</span>
-                  <span className="user-name">{currentUser.name}</span>
-                  <span className="gov-badge-role">
-                    {currentUser.role === "admin" ? "Gov Officer" : "Citizen"}
-                  </span>
-                </div>
-
-                <div className="user-actions-mobile-row">
-                  <button
-                    className="gov-dash-jump-btn"
-                    onClick={() =>
-                      handleNavClick(
-                        currentUser.role === "admin" ? "gov-dashboard" : "citizen-dashboard"
-                      )
-                    }
-                  >
-                    {currentPage.includes("dashboard") ? "Dashboard" : "Go to Dashboard"}
-                  </button>
-
-                  <button className="gov-logout-btn" onClick={onLogout} title="Logout of Session">
-                    Logout
-                  </button>
-                </div>
-              </div>
+              <UserMenu
+                user={currentUser}
+                dashboardActive={currentPage.includes("dashboard")}
+                onDashboard={() =>
+                  handleNavClick(currentUser.role === "admin" ? "gov-dashboard" : "citizen-dashboard")
+                }
+                onLogout={onLogout}
+              />
             ) : (
               <div className="gov-auth-btn-group">
                 <button

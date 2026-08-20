@@ -16,6 +16,19 @@ const SEVERITY_LEVELS = ["low", "medium", "high", "critical"];
 
 const USER_ROLES = ["citizen", "admin"];
 
+// Canonical department list. GovernmentLogin.jsx and GovernmentDashboard.jsx
+// currently use inconsistent naming for the same departments (e.g. "Public Works
+// Department (PWD)" vs "PWD" vs "PWD (Roads)") — use `code` as the value stored
+// on Issue.department and User.department, `label` for anywhere the full name
+// should display.
+const DEPARTMENTS = [
+  { code: "PWD", label: "Public Works Department (PWD)" },
+  { code: "JAL_NIGAM", label: "UP Jal Nigam (Water & Drainage)" },
+  { code: "NPCL", label: "NPCL / State Power Distribution Grid" },
+  { code: "SANITATION", label: "GNIDA Sanitation & Solid Waste" },
+  { code: "GNIDA_ADMIN", label: "GNIDA - Central Command & Administration" },
+];
+
 // Default SLA (in hours) per severity — used to compute slaDeadline on creation.
 const SLA_HOURS_BY_SEVERITY = {
   critical: 24,
@@ -28,5 +41,6 @@ module.exports = {
   ISSUE_STATUSES,
   SEVERITY_LEVELS,
   USER_ROLES,
+  DEPARTMENTS,
   SLA_HOURS_BY_SEVERITY,
 };
