@@ -244,7 +244,7 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
             ) : (
               <div className="gov-auth-btn-group">
                 <button
-                  className={`gov-btn-citizen ${currentPage === "citizen-login" ? "active" : ""}`}
+                  className={`gov-btn-citizen ${currentPage === "citizen-login" || currentPage === "citizen-register" ? "active" : ""}`}
                   onClick={() => handleNavClick("citizen-login")}
                 >
                   <span className="btn-icon">👤</span> Citizen Login (जनता)

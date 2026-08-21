@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import CitizenLogin from "./pages/CitizenLogin";
+import CitizenRegister from "./pages/CitizenRegister";
 import GovernmentLogin from "./pages/GovernmentLogin";
 import CitizenDashboard from "./pages/CitizenDashboard";
 import GovernmentDashboard from "./pages/GovernmentDashboard";
@@ -111,6 +112,10 @@ function App() {
           <CitizenLogin onLogin={handleLogin} navigateTo={navigateTo} />
         )}
 
+        {currentPage === "citizen-register" && (
+          <CitizenRegister onLogin={handleLogin} navigateTo={navigateTo} />
+        )}
+
         {currentPage === "gov-login" && (
           <GovernmentLogin onLogin={handleLogin} navigateTo={navigateTo} />
         )}
@@ -133,6 +138,7 @@ function App() {
       {/* Official Government Footer on Public Pages */}
       {(currentPage === "home" ||
         currentPage === "citizen-login" ||
+        currentPage === "citizen-register" ||
         currentPage === "gov-login") && (
           <footer className="gov-official-footer">
             {/* Top Footer Pillars Bar */}
@@ -190,6 +196,7 @@ function App() {
                 <div className="footer-col-links">
                   <h4>Citizen Redressal</h4>
                   <ul>
+                    <li><button className="footer-text-btn" onClick={() => navigateTo("citizen-register")}>New Citizen Registration</button></li>
                     <li><button className="footer-text-btn" onClick={() => navigateTo("citizen-login")}>Lodge a Grievance</button></li>
                     <li><button className="footer-text-btn" onClick={() => navigateTo("citizen-dashboard")}>Track Grievance Status</button></li>
                     <li><button className="footer-text-btn" onClick={() => navigateTo("citizen-dashboard")}>Download Acknowledgement Slip</button></li>

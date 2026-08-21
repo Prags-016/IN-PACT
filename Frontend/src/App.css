@@ -2178,6 +2178,315 @@ a:hover {
   gap: 2px;
 }
 
+/* Auth Switcher Prompts & Links */
+.auth-switch-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.auth-switch-top-banner {
+  background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+  border: 1px solid #FCD34D;
+  color: #92400E;
+  margin-bottom: 16px;
+}
+
+.auth-switch-bottom-box {
+  background-color: #F8FAFC;
+  border: 1px solid var(--gov-border);
+  color: #334155;
+  margin-top: 20px;
+  padding: 12px 14px;
+}
+
+.auth-switch-link {
+  color: var(--gov-primary);
+  font-weight: 800;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: underline;
+  padding: 4px 8px;
+  border-radius: var(--radius-xs);
+  transition: all 0.15s ease;
+}
+
+.auth-switch-link:hover {
+  background-color: rgba(10, 37, 64, 0.08);
+  color: var(--gov-primary-dark);
+  text-decoration: none;
+  transform: translateX(2px);
+}
+
+.auth-switch-top-banner .auth-switch-link {
+  color: var(--gov-saffron-dark);
+}
+
+.auth-switch-top-banner .auth-switch-link:hover {
+  background-color: rgba(180, 83, 9, 0.1);
+  color: #78350F;
+}
+
+/* Two Column Grid for Auth forms */
+.auth-grid-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .auth-grid-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Password Toggle & Strength Meter */
+.password-toggle-btn {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gov-primary);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  background-color: #F1F5F9;
+  border: 1px solid var(--gov-border);
+}
+
+.password-toggle-btn:hover {
+  background-color: #E2E8F0;
+}
+
+.password-strength-container {
+  margin-top: -6px;
+  margin-bottom: 12px;
+  background-color: #F8FAFC;
+  border: 1px solid var(--gov-border-light);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
+.strength-meter-bar {
+  width: 100%;
+  height: 5px;
+  background-color: #E2E8F0;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.strength-fill {
+  height: 100%;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.strength-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.text-match-ok {
+  color: #15803D;
+  font-weight: 700;
+}
+
+.text-match-no {
+  color: #DC2626;
+  font-weight: 700;
+}
+
+/* Auth Alerts & Banners */
+.auth-error-banner {
+  background-color: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  color: #991B1B;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-success-banner {
+  background-color: #F0FDF4;
+  border: 1px solid #86EFAC;
+  color: #166534;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Checkbox label styling */
+.gov-checkbox-group {
+  display: flex;
+  align-items: flex-start;
+}
+
+.gov-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: #334155;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.gov-checkbox-label input[type="checkbox"] {
+  margin-top: 2px;
+  accent-color: var(--gov-saffron);
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* Simulated Live Government SMS Gateway Toast */
+.gov-sms-toast-overlay {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 99999;
+  max-width: 380px;
+  width: calc(100% - 48px);
+  animation: smsSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes smsSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.gov-sms-toast-card {
+  background: #0f172a;
+  color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+}
+
+.sms-toast-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sms-sender-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sms-icon-bubble {
+  font-size: 20px;
+}
+
+.sms-sender-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.sms-gov-pill {
+  background: #d97706;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+}
+
+.sms-time-stamp {
+  font-size: 10px;
+  color: #94a3b8;
+  display: block;
+}
+
+.sms-toast-close {
+  color: #94a3b8;
+  font-size: 14px;
+  padding: 4px;
+  line-height: 1;
+  border-radius: 4px;
+}
+
+.sms-toast-close:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sms-toast-content {
+  padding: 12px 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #e2e8f0;
+}
+
+.sms-action-row {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sms-code-pill {
+  background: rgba(217, 119, 6, 0.2);
+  border: 1px solid #d97706;
+  color: #fbbf24;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+
+.sms-autofill-btn {
+  background: #0284c7;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.sms-autofill-btn:hover {
+  background: #0369a1;
+  transform: translateY(-1px);
+}
+
 /* =========================================================
    10. DASHBOARDS (CITIZEN & OFFICER)
    ========================================================= */
