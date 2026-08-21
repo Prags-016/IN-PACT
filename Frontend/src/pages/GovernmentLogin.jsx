@@ -1,14 +1,20 @@
 import React, { useState } from "react";
 import { NationalEmblem } from "../components/GovEmblem";
+import { login } from "../services/authService";
 
 export default function GovernmentLogin({ onLogin, navigateTo }) {
   const [authMode, setAuthMode] = useState("sso"); // 'sso' | 'token' | 'dept'
-  const [officerId, setOfficerId] = useState("GOV-IAS-001");
-  const [password, setPassword] = useState("••••••••••••");
+  // NOTE: these used to default to decorative placeholder text ("GOV-IAS-001",
+  // bullet characters for password) since the login was fake. Now that this
+  // calls the real backend, those defaults would silently fail auth if the
+  // officer didn't overwrite them — starting empty instead.
+  const [officerId, setOfficerId] = useState("");
+  const [password, setPassword] = useState("");
   const [department, setDepartment] = useState("GNIDA - Central Command & Administration");
   const [zone, setZone] = useState("Greater Noida Metropolis (All Zones)");
   const [smartTokenPin, setSmartTokenPin] = useState("9042");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [captchaCode, setCaptchaCode] = useState("N8P4Y");
   const [captchaInput, setCaptchaInput] = useState("N8P4Y");
 
@@ -22,25 +28,32 @@ export default function GovernmentLogin({ onLogin, navigateTo }) {
     setCaptchaInput("");
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setError(null);
+
+    // The e-Token/DSC PIN mode has no real backend behind it (your API only
+    // supports email/password auth) — rather than silently faking success,
+    // tell the officer plainly so nobody thinks it's actually working.
+    if (authMode === "token") {
+      setError("e-Token / DSC PIN login isn't connected to a real authentication system yet. Use Parichay SSO or Department Credentials (email/password) to sign in for real.");
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      onLogin({
-        id: officerId || "GOV-OFF-9042",
-        name: "Dr. Rajesh Mehta, IAS",
-        role: "admin",
-        designation: "District Magistrate & Municipal Commissioner",
-        department: department,
-        zone: zone,
-        badgeId: "NIC-SSO-7729",
-        clearanceLevel: "Level 1 (Executive District Command)",
-        avatar: "🏛️",
-        authType: "Parichay NIC SSO Verified"
-      });
+    try {
+      const user = await login(officerId, password);
+      if (user.role !== "admin") {
+        setError("This account isn't registered as a government officer. Contact your administrator if this is unexpected.");
+        return;
+      }
+      onLogin(user);
       navigateTo("gov-dashboard");
-    }, 450);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleQuickDemoAdmin = (roleType) => {
@@ -151,12 +164,12 @@ export default function GovernmentLogin({ onLogin, navigateTo }) {
           <form onSubmit={handleLogin} className="gov-form auth-tab-body">
             <div className="gov-form-group">
               <label className="gov-form-label">
-                Official Government Email / Gov ID (सरकारी पहचान पत्र / ईमेल) *
+                Official Government Email (सरकारी ईमेल) *
               </label>
               <input
-                type="text"
+                type="email"
                 className="gov-input"
-                placeholder="officer.name@gov.in or @nic.in"
+                placeholder="officer.name@gov.in"
                 value={officerId}
                 onChange={(e) => setOfficerId(e.target.value)}
                 required
@@ -237,6 +250,12 @@ export default function GovernmentLogin({ onLogin, navigateTo }) {
                 />
               </div>
             </div>
+
+            {error && (
+              <div className="auth-error-banner" style={{ marginBottom: "12px" }}>
+                {error}
+              </div>
+            )}
 
             <button type="submit" className="gov-btn-officer-block" disabled={loading}>
               {loading ? "Authenticating Clearance..." : "Login to Executive Command Console (प्रवेश करें) →"}

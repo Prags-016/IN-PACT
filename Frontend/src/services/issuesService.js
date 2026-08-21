@@ -8,13 +8,14 @@ export async function getMyIssues() {
 
 /**
  * Fetches all public issues, optionally filtered.
- * @param {object} filters 
+ * @param {object} filters - any of { status, severity, category, department, ward }
  */
 export async function getIssues(filters = {}) {
     const params = new URLSearchParams(filters).toString();
     const data = await apiFetch(`/issues${params ? `?${params}` : ""}`);
     return data.issues;
 }
+
 
 export async function getIssueById(id) {
     const data = await apiFetch(`/issues/${id}`);
@@ -30,7 +31,6 @@ export async function createIssue(payload) {
     return data.issue;
 }
 
-/** Toggles the logged-in user's upvote on an issue. Returns { upvotes, hasUpvoted }. */
 export async function toggleUpvote(id) {
     return apiFetch(`/issues/${id}/upvote`, { method: "POST" });
 }
@@ -39,5 +39,21 @@ export async function toggleUpvote(id) {
 export async function getStats(ward) {
     const data = await apiFetch(`/issues/stats${ward ? `?ward=${encodeURIComponent(ward)}` : ""}`);
     return data.stats;
+}
+
+/**
+ * Admin-only: updates an issue's status (and optionally the assigned officer).
+ * @param {string} id - the issue's Mongo _id
+ * @param {object} payload - { status, note?, label?, assignedOfficer? }
+ */
+export async function updateIssueStatus(id, payload) {
+    const data = await apiFetch(`/issues/${id}/status`, { method: "PATCH", body: payload });
+    return data.issue;
+}
+
+
+export async function getDepartmentStats() {
+    const data = await apiFetch("/issues/stats/departments");
+    return data.departments; // [{ code, label, activeLoad, disposed24h, slaCompliance }]
 }
 

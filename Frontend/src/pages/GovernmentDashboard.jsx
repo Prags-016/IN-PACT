@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import StatCard from "../components/StatCard";
 import IssueCard from "../components/IssueCard";
 import MapView from "../components/MapView";
+import { getIssues, updateIssueStatus, getStats, getDepartmentStats } from "../services/issuesService";
 
 export default function GovernmentDashboard({ currentUser, navigateTo }) {
   const [activeTab, setActiveTab] = useState("overview"); // overview | triage | heatmap | predictive | departments | reports
@@ -11,119 +12,90 @@ export default function GovernmentDashboard({ currentUser, navigateTo }) {
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [activeAlertNotification, setActiveAlertNotification] = useState(null);
 
-  // Government Live Grievance Database
-  const [grievances, setGrievances] = useState([
-    {
-      id: "UP-GND-2026-9401",
-      title: "Severe Road Cave-in & Pothole Cluster after Heavy Rains",
-      description: "Multiple 2-ft craters across a 500m arterial segment causing critical vehicle damage and gridlock.",
-      category: "Roads & Infrastructure",
-      department: "PWD",
-      severity: "critical",
-      status: "in_progress",
-      location: "Knowledge Park III, Main Access Road",
-      timestamp: "35 mins ago",
-      upvotes: 68,
-      aiConfidence: 97,
-      slaRemaining: "4 hrs (Emergency SLA)",
-      assignedOfficer: "Er. S.K. Sharma (EE, PWD)",
-      aiTags: ["High Accident Probability", "Multi-Vehicle Impact", "Asphalt Failure"]
-    },
-    {
-      id: "UP-GND-2026-9388",
-      title: "Main 600mm Drinking Water Pipeline Burst",
-      description: "Pressurized clean water gushing onto the road. Over 1,200 households reporting total loss of water supply.",
-      category: "Water Supply",
-      department: "UP Jal Nigam",
-      severity: "critical",
-      status: "submitted",
-      location: "Gamma 2 Sector Road, Near Community Hall",
-      timestamp: "1 hour ago",
-      upvotes: 94,
-      aiConfidence: 99,
-      slaRemaining: "3 hrs (Emergency SLA)",
-      assignedOfficer: "Er. A.K. Srivastava (AE, Jal Nigam)",
-      aiTags: ["Resource Wastage", "Household Disruption", "Sub-surface Erosion"]
-    },
-    {
-      id: "UP-GND-2026-9352",
-      title: "Commercial 11kV Transformer Overheating & Sparking",
-      description: "Severe audible buzzing and smoke plumes from pole-mounted transformer during peak evening load.",
-      category: "Electricity",
-      department: "NPCL Power",
-      severity: "critical",
-      status: "in_progress",
-      location: "Alpha 1 Commercial Belt, Block B",
-      timestamp: "2 hours ago",
-      upvotes: 112,
-      aiConfidence: 98,
-      slaRemaining: "1.5 hrs (Life Safety Hazard)",
-      assignedOfficer: "R.K. Gupta (Divisional Engineer)",
-      aiTags: ["Fire Hazard Risk", "High Tension Line", "Commercial Zone"]
-    },
-    {
-      id: "UP-GND-2026-9290",
-      title: "Illegal Solid Waste Dumping & Open Burning",
-      description: "Unregulated industrial plastic scrap dumped along vacant plot. Strong toxic smoke drifting into residential sector.",
-      category: "Sanitation & Environment",
-      department: "GNIDA Sanitation",
-      severity: "high",
-      status: "triaged",
-      location: "Delta 2 Sector Perimeter",
-      timestamp: "4 hours ago",
-      upvotes: 45,
-      aiConfidence: 95,
-      slaRemaining: "14 hrs",
-      assignedOfficer: "Dr. Vinod Pathak (Sanitary Inspector)",
-      aiTags: ["Air Quality Index Impact", "Pollution Control Board Violation"]
-    },
-    {
-      id: "UP-GND-2026-9211",
-      title: "Primary Stormwater Drain Blocked by Construction Debris",
-      description: "Concrete slag and plastic clogging culvert. Silt level at 85% capacity ahead of forecasted monsoon rain.",
-      category: "Drainage & Flood Control",
-      department: "UP Jal Nigam",
-      severity: "high",
-      status: "in_progress",
-      location: "Pari Chowk Junction underpass",
-      timestamp: "6 hours ago",
-      upvotes: 51,
-      aiConfidence: 96,
-      slaRemaining: "12 hrs",
-      assignedOfficer: "Er. Manoj Bajpai (Drainage Wing)",
-      aiTags: ["Predictive Flood Risk", "Traffic Arterial Choke"]
-    },
-    {
-      id: "UP-GND-2026-9145",
-      title: "Cluster of 18 Non-Functional LED Streetlights",
-      description: "Continuous 1.2km stretch completely unlit, creating blind spots for nighttime cyclists and pedestrians.",
-      category: "Street Lighting",
-      department: "NPCL Power",
-      severity: "medium",
-      status: "triaged",
-      location: "Sector Beta 1 Inner Ring Road",
-      timestamp: "9 hours ago",
-      upvotes: 29,
-      aiConfidence: 94,
-      slaRemaining: "20 hrs",
-      assignedOfficer: "Sunil Tyagi (Electrical AE)",
-      aiTags: ["Public Safety", "Night Commute Hazard"]
-    }
-  ]);
+  // Government Live Grievance Database — fetched from the real backend
+  const [grievances, setGrievances] = useState([]);
+  const [loadingGrievances, setLoadingGrievances] = useState(true);
+  const [grievancesError, setGrievancesError] = useState(null);
 
-  const handleStatusChange = (id, newStatus) => {
-    setGrievances((prev) =>
-      prev.map((g) => (g.id === id ? { ...g, status: newStatus } : g))
-    );
+  // Overview stats. NOTE: only totalActive, critical, and resolvedThisMonth
+  // come from a real endpoint. "24-Hr Disposal Rate" and "Predictive Alerts"
+  // have no backend behind them (no AI/ML pipeline built yet) — those two
+  // StatCards stay as illustrative placeholders, clearly not live numbers.
+  const [overviewStats, setOverviewStats] = useState(null);
+  const [deptStats, setDeptStats] = useState([]);
+  const [loadingDeptStats, setLoadingDeptStats] = useState(true);
+
+  // Maps a raw backend Issue to what this component's JSX expects: `id` alias
+  // for _id (so IssueCard's internal destructuring still works unchanged).
+  const mapIssue = (issue) => ({ ...issue, id: issue._id });
+
+  const loadGrievances = () => {
+    setLoadingGrievances(true);
+    setGrievancesError(null);
+    getIssues()
+      .then((issues) => setGrievances(issues.map(mapIssue)))
+      .catch((err) => setGrievancesError(err.message))
+      .finally(() => setLoadingGrievances(false));
+  };
+
+  const loadDeptStats = () => {
+    setLoadingDeptStats(true);
+    getDepartmentStats()
+      .then(setDeptStats)
+      .catch(() => setDeptStats([]))
+      .finally(() => setLoadingDeptStats(false));
+  };
+
+  useEffect(() => {
+    loadGrievances();
+    loadDeptStats();
+    getStats()
+      .then(setOverviewStats)
+      .catch(() => { });
+  }, []);
+
+  const handleStatusChange = async (id, newStatus) => {
+    const previous = grievances;
+    // Optimistic update
+    setGrievances((prev) => prev.map((g) => (g.id === id ? { ...g, status: newStatus } : g)));
+    try {
+      const updated = await updateIssueStatus(id, { status: newStatus });
+      setGrievances((prev) => prev.map((g) => (g.id === id ? mapIssue(updated) : g)));
+      loadDeptStats(); // department scorecard numbers change when status changes
+    } catch (err) {
+      setGrievances(previous); // rollback
+      alert(`Couldn't update status: ${err.message}`);
+    }
+  };
+
+  const handleDepartmentChange = async (id, newDept) => {
+    const target = grievances.find((g) => g.id === id);
+    if (!target) return;
+    const previous = grievances;
+    setGrievances((prev) => prev.map((g) => (g.id === id ? { ...g, department: newDept } : g)));
+    try {
+      // The status endpoint doubles as the department-reassignment endpoint —
+      // keep the current status unchanged, only the department field updates.
+      const updated = await updateIssueStatus(id, { status: target.status, department: newDept });
+      setGrievances((prev) => prev.map((g) => (g.id === id ? mapIssue(updated) : g)));
+      loadDeptStats();
+    } catch (err) {
+      setGrievances(previous);
+      alert(`Couldn't reassign department: ${err.message}`);
+    }
   };
 
   const handleDispatchEmergencySquad = (issue) => {
-    setActiveAlertNotification(`Emergency Field Maintenance Squad successfully dispatched to ${issue.location} for ${issue.id}. Notification broadcasted to Nodal Engineer.`);
+    // No real dispatch system exists yet — this stays a UI-only simulation.
+    setActiveAlertNotification(`Emergency Field Maintenance Squad successfully dispatched to ${issue.location?.address || issue.location?.ward || "the reported location"} for ${issue.refId}. Notification broadcasted to Nodal Engineer.`);
     setTimeout(() => setActiveAlertNotification(null), 5000);
   };
 
+  // filterDept now uses the backend's real canonical codes (PWD, JAL_NIGAM,
+  // NPCL, SANITATION, GNIDA_ADMIN) for an exact match, instead of the old
+  // substring-guessing against free-text department names.
   const filteredGrievances = grievances.filter((g) => {
-    const matchDept = filterDept === "all" || g.department.toLowerCase().includes(filterDept.toLowerCase());
+    const matchDept = filterDept === "all" || g.department === filterDept;
     const matchSev = filterSeverity === "all" || g.severity.toLowerCase() === filterSeverity.toLowerCase();
     return matchDept && matchSev;
   });
@@ -184,36 +156,36 @@ export default function GovernmentDashboard({ currentUser, navigateTo }) {
               <div className="dash-stats-row">
                 <StatCard
                   title="Total Active Grievances"
-                  value="1,428"
+                  value={overviewStats ? overviewStats.totalActive.toLocaleString("en-IN") : "—"}
                   subtitle="Under current jurisdiction"
                   icon="📋"
-                  trend="14 new in last 1 hr"
+                  trend={overviewStats ? "Live from database" : "Loading…"}
                   trendPositive={false}
                 />
                 <StatCard
-                  title="Emergency Life-Safety Cases"
-                  value="12"
-                  subtitle="Assigned to Nodal Engineers"
+                  title="Critical Cases"
+                  value={overviewStats ? overviewStats.critical.toLocaleString("en-IN") : "—"}
+                  subtitle="Unresolved, highest severity"
                   icon="🚨"
                   trend="Statutory SLA < 6 Hrs"
                   trendPositive={false}
                   variant="warning"
                 />
                 <StatCard
-                  title="24-Hr Disposal Rate"
-                  value="94.2%"
+                  title="Resolved This Month"
+                  value={overviewStats ? overviewStats.resolvedThisMonth.toLocaleString("en-IN") : "—"}
                   subtitle="SLA compliant resolution"
                   icon="⚡"
-                  trend="Above State Target (90%)"
+                  trend="Live from database"
                   trendPositive={true}
                   variant="success"
                 />
                 <StatCard
                   title="Predictive Alerts Active"
                   value="6 Hotspots"
-                  subtitle="Monsoon silt & transformer load"
+                  subtitle="Illustrative — no ML pipeline yet"
                   icon="🧠"
-                  trend="Pre-emptive action ordered"
+                  trend="Not connected to live data"
                   trendPositive={true}
                   variant="purple"
                 />
@@ -246,60 +218,56 @@ export default function GovernmentDashboard({ currentUser, navigateTo }) {
                 </div>
 
                 <div className="charter-table-responsive">
-                  <table className="gov-data-table">
-                    <thead>
-                      <tr>
-                        <th>Department</th>
-                        <th>Nodal Executive Officer</th>
-                        <th>Active Load</th>
-                        <th>Disposed (24h)</th>
-                        <th>SLA Compliance</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td><strong>Public Works Dept (PWD)</strong></td>
-                        <td>Er. S.K. Sharma (Chief EE)</td>
-                        <td>342</td>
-                        <td>48</td>
-                        <td><span className="badge-pill pill-green">96.8%</span></td>
-                        <td><button className="text-btn" onClick={() => { setFilterDept("PWD"); setActiveTab("triage"); }}>View Queue</button></td>
-                      </tr>
-                      <tr>
-                        <td><strong>UP Jal Nigam (Water & Drainage)</strong></td>
-                        <td>Er. A.K. Srivastava (SE)</td>
-                        <td>289</td>
-                        <td>39</td>
-                        <td><span className="badge-pill pill-amber">91.2%</span></td>
-                        <td><button className="text-btn" onClick={() => { setFilterDept("Jal"); setActiveTab("triage"); }}>View Queue</button></td>
-                      </tr>
-                      <tr>
-                        <td><strong>NPCL State Power Distribution</strong></td>
-                        <td>R.K. Gupta (Divisional Eng)</td>
-                        <td>194</td>
-                        <td>62</td>
-                        <td><span className="badge-pill pill-green">98.1%</span></td>
-                        <td><button className="text-btn" onClick={() => { setFilterDept("NPCL"); setActiveTab("triage"); }}>View Queue</button></td>
-                      </tr>
-                      <tr>
-                        <td><strong>GNIDA Sanitation & Solid Waste</strong></td>
-                        <td>Dr. Vinod Pathak (CSO)</td>
-                        <td>412</td>
-                        <td>88</td>
-                        <td><span className="badge-pill pill-green">94.5%</span></td>
-                        <td><button className="text-btn" onClick={() => { setFilterDept("Sanitation"); setActiveTab("triage"); }}>View Queue</button></td>
-                      </tr>
-                      <tr>
-                        <td><strong>Traffic & Mobility Police Cell</strong></td>
-                        <td>ACP Traffic HQ</td>
-                        <td>191</td>
-                        <td>24</td>
-                        <td><span className="badge-pill pill-green">97.0%</span></td>
-                        <td><button className="text-btn" onClick={() => { setFilterDept("Traffic"); setActiveTab("triage"); }}>View Queue</button></td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  {loadingDeptStats ? (
+                    <p style={{ padding: "16px" }}>Loading department scorecard…</p>
+                  ) : (
+                    <table className="gov-data-table">
+                      <thead>
+                        <tr>
+                          <th>Department</th>
+                          <th>Nodal Executive Officer</th>
+                          <th>Active Load</th>
+                          <th>Disposed (24h)</th>
+                          <th>SLA Compliance</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {deptStats.map((dept) => {
+                          // Officer names aren't modeled on the backend yet (no
+                          // per-department officer directory table) — this is a
+                          // static display lookup, not live data.
+                          const officerNames = {
+                            PWD: "Er. S.K. Sharma (Chief EE)",
+                            JAL_NIGAM: "Er. A.K. Srivastava (SE)",
+                            NPCL: "R.K. Gupta (Divisional Eng)",
+                            SANITATION: "Dr. Vinod Pathak (CSO)",
+                            GNIDA_ADMIN: "District Magistrate Office",
+                          };
+                          const pillClass =
+                            dept.slaCompliance == null ? "pill-grey" : dept.slaCompliance >= 95 ? "pill-green" : dept.slaCompliance >= 85 ? "pill-amber" : "pill-red";
+                          return (
+                            <tr key={dept.code}>
+                              <td><strong>{dept.label}</strong></td>
+                              <td>{officerNames[dept.code] || "Not yet assigned"}</td>
+                              <td>{dept.activeLoad}</td>
+                              <td>{dept.disposed24h}</td>
+                              <td>
+                                <span className={`badge-pill ${pillClass}`}>
+                                  {dept.slaCompliance != null ? `${dept.slaCompliance}%` : "No data"}
+                                </span>
+                              </td>
+                              <td>
+                                <button className="text-btn" onClick={() => { setFilterDept(dept.code); setActiveTab("triage"); }}>
+                                  View Queue
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               </div>
             </div>
@@ -328,9 +296,10 @@ export default function GovernmentDashboard({ currentUser, navigateTo }) {
                       >
                         <option value="all">All Departments</option>
                         <option value="PWD">PWD (Roads)</option>
-                        <option value="Jal">UP Jal Nigam (Water/Drain)</option>
+                        <option value="JAL_NIGAM">UP Jal Nigam (Water/Drain)</option>
                         <option value="NPCL">NPCL Power</option>
-                        <option value="Sanitation">GNIDA Sanitation</option>
+                        <option value="SANITATION">GNIDA Sanitation</option>
+                        <option value="GNIDA_ADMIN">GNIDA Administration</option>
                       </select>
                     </div>
 
@@ -351,63 +320,90 @@ export default function GovernmentDashboard({ currentUser, navigateTo }) {
                 </div>
 
                 <div className="grievance-triage-list">
-                  {filteredGrievances.map((g) => (
-                    <div key={g.id} className={`triage-case-card priority-border-${g.severity}`}>
-                      <div className="triage-case-header">
-                        <div className="case-ref-row">
-                          <span className="g-ref-badge">{g.id}</span>
-                          <span className={`priority-badge priority-${g.severity}`}>
-                            {g.severity.toUpperCase()} PRIORITY
-                          </span>
-                          <span className="dept-tag">🏢 {g.department}</span>
-                          <span className="assigned-officer-pill">👤 Assigned: {g.assignedOfficer}</span>
+                  {loadingGrievances ? (
+                    <p style={{ padding: "16px" }}>Loading grievances…</p>
+                  ) : grievancesError ? (
+                    <p style={{ padding: "16px" }}>Couldn't load grievances: {grievancesError}</p>
+                  ) : filteredGrievances.length === 0 ? (
+                    <p style={{ padding: "16px" }}>No grievances match the current filters.</p>
+                  ) : (
+                    filteredGrievances.map((g) => (
+                      <div key={g.id} className={`triage-case-card priority-border-${g.severity}`}>
+                        <div className="triage-case-header">
+                          <div className="case-ref-row">
+                            <span className="g-ref-badge">{g.refId}</span>
+                            <span className={`priority-badge priority-${g.severity}`}>
+                              {g.severity.toUpperCase()} PRIORITY
+                            </span>
+                            <span className="dept-tag">
+                              🏢{" "}
+                              <select
+                                value={g.department}
+                                onChange={(e) => handleDepartmentChange(g.id, e.target.value)}
+                                style={{ border: "none", background: "transparent", font: "inherit", cursor: "pointer" }}
+                              >
+                                <option value="Auto-Routing" disabled>Auto-Routing (unassigned)</option>
+                                <option value="PWD">PWD</option>
+                                <option value="JAL_NIGAM">UP Jal Nigam</option>
+                                <option value="NPCL">NPCL Power</option>
+                                <option value="SANITATION">GNIDA Sanitation</option>
+                                <option value="GNIDA_ADMIN">GNIDA Administration</option>
+                              </select>
+                            </span>
+                            <span className="assigned-officer-pill">👤 Assigned: {g.assignedOfficer || "Not yet assigned"}</span>
+                          </div>
+
+                          <div className="case-status-actions">
+                            <select
+                              className="gov-status-select"
+                              value={g.status}
+                              onChange={(e) => handleStatusChange(g.id, e.target.value)}
+                            >
+                              <option value="reported">Registered / Auto-Triaged</option>
+                              <option value="verified">Verified</option>
+                              <option value="assigned">Assigned to Nodal EE</option>
+                              <option value="in_progress">Field Crew Deployed (In Progress)</option>
+                              <option value="resolved">Resolved & Closed (Photo Verified)</option>
+                              <option value="reopened">Reopened</option>
+                              <option value="escalated">Escalated</option>
+                            </select>
+                          </div>
                         </div>
 
-                        <div className="case-status-actions">
-                          <select
-                            className="gov-status-select"
-                            value={g.status}
-                            onChange={(e) => handleStatusChange(g.id, e.target.value)}
-                          >
-                            <option value="submitted">Registered / Auto-Triaged</option>
-                            <option value="triaged">Assigned to Nodal EE</option>
-                            <option value="in_progress">Field Crew Deployed (In Progress)</option>
-                            <option value="resolved">Resolved & Closed (Photo Verified)</option>
-                          </select>
+                        <h4 className="case-title">{g.title}</h4>
+                        <p className="case-desc">{g.description}</p>
+
+                        {g.aiConfidence != null && (
+                          <div className="case-ai-attributes">
+                            <span className="attr-label">AI Detected Anomaly Attributes:</span>
+                            <div className="attr-tags">
+                              <span className="conf-pill">Confidence: {g.aiConfidence}%</span>
+                              {(g.aiTags || []).map((t, idx) => (
+                                <span key={idx} className="attr-tag-chip">✓ {t}</span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="case-footer-row">
+                          <div className="case-meta-left">
+                            <span>📍 {g.location?.address || g.location?.ward || "—"}</span>
+                            <span>🕒 {new Date(g.createdAt).toLocaleString("en-IN")}</span>
+                            <span className="sla-pill">⏳ SLA: {g.slaRemaining}</span>
+                          </div>
+
+                          <div className="case-meta-right">
+                            <button
+                              className="gov-btn-dispatch-sm"
+                              onClick={() => handleDispatchEmergencySquad(g)}
+                            >
+                              🚜 Dispatch Emergency Squad
+                            </button>
+                          </div>
                         </div>
                       </div>
-
-                      <h4 className="case-title">{g.title}</h4>
-                      <p className="case-desc">{g.description}</p>
-
-                      <div className="case-ai-attributes">
-                        <span className="attr-label">AI Detected Anomaly Attributes:</span>
-                        <div className="attr-tags">
-                          <span className="conf-pill">Confidence: {g.aiConfidence}%</span>
-                          {g.aiTags.map((t, idx) => (
-                            <span key={idx} className="attr-tag-chip">✓ {t}</span>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="case-footer-row">
-                        <div className="case-meta-left">
-                          <span>📍 {g.location}</span>
-                          <span>🕒 {g.timestamp}</span>
-                          <span className="sla-pill">⏳ SLA: {g.slaRemaining}</span>
-                        </div>
-
-                        <div className="case-meta-right">
-                          <button
-                            className="gov-btn-dispatch-sm"
-                            onClick={() => handleDispatchEmergencySquad(g)}
-                          >
-                            🚜 Dispatch Emergency Squad
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </div>
             </div>

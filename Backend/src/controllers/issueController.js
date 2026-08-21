@@ -1,6 +1,7 @@
 const Issue = require("../models/Issue");
 const asyncHandler = require("../middleware/asyncHandler");
 const { ISSUE_STATUSES, DEPARTMENTS } = require("../config/constants");
+const { assignDepartment, isValidDepartmentCode } = require("../utils/autoRoute");
 
 // @route  GET /api/issues
 // @query  status, severity, category, department, lat, lng, radiusKm, page, limit
@@ -91,6 +92,7 @@ const createIssue = asyncHandler(async (req, res) => {
     severity,
     location,
     imageUrl,
+    department: assignDepartment({ category, title, description }),
     reportedBy: req.user._id,
     statusHistory: [
       {
@@ -106,17 +108,24 @@ const createIssue = asyncHandler(async (req, res) => {
 
 // @route  PATCH /api/issues/:id/status
 // @access Private (admin only)
-// body: { status, note, label, assignedOfficer }
+// body: { status, note, label, assignedOfficer, department }
 // - `label` is the human-readable timeline entry shown to the citizen
 //   (e.g. "Auto-Routed & Assigned to PWD Executive Engineer"). Falls back to a
 //   generic message built from `status` if omitted.
 // - `assignedOfficer` is optional and only updates the field when provided.
+// - `department` is optional — lets an officer manually correct a mis-routed
+//   issue (auto-routing at creation is simple keyword matching, not perfect).
 const updateIssueStatus = asyncHandler(async (req, res) => {
-  const { status, note, label, assignedOfficer } = req.body;
+  const { status, note, label, assignedOfficer, department } = req.body;
 
   if (!ISSUE_STATUSES.includes(status)) {
     res.status(400);
     throw new Error(`Status must be one of: ${ISSUE_STATUSES.join(", ")}`);
+  }
+
+  if (department !== undefined && !isValidDepartmentCode(department)) {
+    res.status(400);
+    throw new Error(`Department must be one of: ${DEPARTMENTS.map((d) => d.code).join(", ")}`);
   }
 
   const issue = await Issue.findById(req.params.id);
@@ -127,6 +136,7 @@ const updateIssueStatus = asyncHandler(async (req, res) => {
 
   issue.status = status;
   if (assignedOfficer !== undefined) issue.assignedOfficer = assignedOfficer;
+  if (department !== undefined) issue.department = department;
   issue.statusHistory.push({
     status,
     label: label || `Status updated to ${status.replace(/_/g, " ")}`,
