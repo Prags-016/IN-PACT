@@ -179,11 +179,13 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
               </button>
             </li>
 
-            <li className={`gov-nav-item ${currentPage === "citizen-dashboard" ? "active" : ""}`}>
-              <button className="gov-nav-link" onClick={() => handleNavClick("citizen-dashboard")}>
-                Lodge Grievance
-              </button>
-            </li>
+            {(!currentUser || currentUser.role !== "admin") && (
+              <li className={`gov-nav-item ${currentPage === "citizen-dashboard" ? "active" : ""}`}>
+                <button className="gov-nav-link" onClick={() => handleNavClick("citizen-dashboard")}>
+                  Lodge Grievance
+                </button>
+              </li>
+            )}
 
             <li className="gov-nav-item">
               <button
@@ -244,7 +246,7 @@ export default function Navbar({ currentPage, navigateTo, currentUser, onLogout 
             ) : (
               <div className="gov-auth-btn-group">
                 <button
-                  className={`gov-btn-citizen ${currentPage === "citizen-login" || currentPage === "citizen-register" ? "active" : ""}`}
+                  className={`gov-btn-citizen ${currentPage === "citizen-login" ? "active" : ""}`}
                   onClick={() => handleNavClick("citizen-login")}
                 >
                   <span className="btn-icon">👤</span> Citizen Login (जनता)

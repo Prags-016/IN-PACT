@@ -2,14 +2,12 @@ import React, { useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import CitizenLogin from "./pages/CitizenLogin";
-import CitizenRegister from "./pages/CitizenRegister";
 import GovernmentLogin from "./pages/GovernmentLogin";
 import CitizenDashboard from "./pages/CitizenDashboard";
 import GovernmentDashboard from "./pages/GovernmentDashboard";
 import { NationalEmblem, GovDigitalIndiaBadge } from "./components/GovEmblem";
 import { getToken } from "./services/api";
 import { getMe, logout as clearAuth } from "./services/authService";
-import ScrollToTopButton from "./components/ScrollToTopButton";
 
 function App() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -40,6 +38,19 @@ function App() {
       })
       .finally(() => setCheckingSession(false));
   }, []);
+
+  // Route guard: if a logged-in user's role doesn't match the dashboard
+  // they're trying to view (e.g. an admin clicking a stale citizen link, or
+  // using the browser back button into the wrong dashboard), redirect them
+  // to their own correct dashboard instead of rendering the wrong role's UI.
+  useEffect(() => {
+    if (!currentUser) return;
+    if (currentPage === "citizen-dashboard" && currentUser.role === "admin") {
+      navigateTo("gov-dashboard");
+    } else if (currentPage === "gov-dashboard" && currentUser.role !== "admin") {
+      navigateTo("citizen-dashboard");
+    }
+  }, [currentPage, currentUser]);
 
   const navigateTo = (page) => {
     setCurrentPage(page);
@@ -112,10 +123,6 @@ function App() {
           <CitizenLogin onLogin={handleLogin} navigateTo={navigateTo} />
         )}
 
-        {currentPage === "citizen-register" && (
-          <CitizenRegister onLogin={handleLogin} navigateTo={navigateTo} />
-        )}
-
         {currentPage === "gov-login" && (
           <GovernmentLogin onLogin={handleLogin} navigateTo={navigateTo} />
         )}
@@ -138,7 +145,6 @@ function App() {
       {/* Official Government Footer on Public Pages */}
       {(currentPage === "home" ||
         currentPage === "citizen-login" ||
-        currentPage === "citizen-register" ||
         currentPage === "gov-login") && (
           <footer className="gov-official-footer">
             {/* Top Footer Pillars Bar */}
@@ -196,7 +202,6 @@ function App() {
                 <div className="footer-col-links">
                   <h4>Citizen Redressal</h4>
                   <ul>
-                    <li><button className="footer-text-btn" onClick={() => navigateTo("citizen-register")}>New Citizen Registration</button></li>
                     <li><button className="footer-text-btn" onClick={() => navigateTo("citizen-login")}>Lodge a Grievance</button></li>
                     <li><button className="footer-text-btn" onClick={() => navigateTo("citizen-dashboard")}>Track Grievance Status</button></li>
                     <li><button className="footer-text-btn" onClick={() => navigateTo("citizen-dashboard")}>Download Acknowledgement Slip</button></li>
@@ -255,7 +260,6 @@ function App() {
             </div>
           </footer>
         )}
-      <ScrollToTopButton />
     </div>
   );
 }
