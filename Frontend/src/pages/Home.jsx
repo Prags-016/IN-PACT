@@ -2,7 +2,11 @@ import React, { useState } from "react";
 import StatCard from "../components/StatCard";
 import MapView from "../components/MapView";
 
-export default function Home({ navigateTo }) {
+export default function Home({ navigateTo, currentUser }) {
+  const isOfficer = currentUser?.role === "admin";
+  // Where a citizen-facing action button should send someone, based on role.
+  const citizenActionTarget = () => navigateTo(isOfficer ? "gov-dashboard" : "citizen-dashboard");
+
   // Reference search state for live tracking
   const [searchRefId, setSearchRefId] = useState("");
   const [searchStatusResult, setSearchStatusResult] = useState(null);
@@ -123,8 +127,8 @@ export default function Home({ navigateTo }) {
           </span>
           <div className="marquee-content">
             <span>
-              <strong>[URGENT SLA DIRECTIVE]</strong> District Magistrate mandates 100% geotagged photo verification for all municipal road and drainage repairs across Greater Noida wards. &bull; 
-              <strong>[MONSOON PREPAREDNESS]</strong> All culverts and stormwater drains under UP Jal Nigam undergoing 24x7 AI telemetry monitoring. &bull; 
+              <strong>[URGENT SLA DIRECTIVE]</strong> District Magistrate mandates 100% geotagged photo verification for all municipal road and drainage repairs across Greater Noida wards. &bull;
+              <strong>[MONSOON PREPAREDNESS]</strong> All culverts and stormwater drains under UP Jal Nigam undergoing 24x7 AI telemetry monitoring. &bull;
               <strong>[CITIZEN CHARTER]</strong> Citizens can track statutory SLA resolution and file second-appeal escalations via this portal.
             </span>
           </div>
@@ -152,12 +156,21 @@ export default function Home({ navigateTo }) {
             </p>
 
             <div className="hero-action-buttons">
-              <button
-                className="gov-btn-primary-lg"
-                onClick={() => navigateTo("citizen-dashboard")}
-              >
-                <span className="btn-icon">📝</span> Lodge a Grievance (शिकायत दर्ज करें)
-              </button>
+              {isOfficer ? (
+                <button
+                  className="gov-btn-primary-lg"
+                  onClick={() => navigateTo("gov-dashboard")}
+                >
+                  <span className="btn-icon">🏛️</span> Go to Officer Dashboard →
+                </button>
+              ) : (
+                <button
+                  className="gov-btn-primary-lg"
+                  onClick={() => navigateTo("citizen-dashboard")}
+                >
+                  <span className="btn-icon">📝</span> Lodge a Grievance (शिकायत दर्ज करें)
+                </button>
+              )}
 
               <button
                 className="gov-btn-secondary-lg"
@@ -243,20 +256,22 @@ export default function Home({ navigateTo }) {
                 </div>
               )}
 
-              <div className="tracker-quick-links">
-                <span className="quick-label">Citizen Quick Services:</span>
-                <div className="quick-badges-row">
-                  <button onClick={() => navigateTo("citizen-dashboard")} className="quick-chip">
-                    📸 Photo Grievance
-                  </button>
-                  <button onClick={() => navigateTo("citizen-dashboard")} className="quick-chip">
-                    🎙️ Voice Complaint
-                  </button>
-                  <button onClick={() => navigateTo("citizen-dashboard")} className="quick-chip">
-                    📋 Download Receipt
-                  </button>
+              {!isOfficer && (
+                <div className="tracker-quick-links">
+                  <span className="quick-label">Citizen Quick Services:</span>
+                  <div className="quick-badges-row">
+                    <button onClick={() => navigateTo("citizen-dashboard")} className="quick-chip">
+                      📸 Photo Grievance
+                    </button>
+                    <button onClick={() => navigateTo("citizen-dashboard")} className="quick-chip">
+                      🎙️ Voice Complaint
+                    </button>
+                    <button onClick={() => navigateTo("citizen-dashboard")} className="quick-chip">
+                      📋 Download Receipt
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -275,28 +290,28 @@ export default function Home({ navigateTo }) {
           </div>
 
           <div className="services-grid-4">
-            <div className="service-portal-card" onClick={() => navigateTo("citizen-dashboard")}>
+            <div className="service-portal-card" onClick={citizenActionTarget}>
               <div className="service-card-icon roads-icon">🛣️</div>
               <h3>Roads & Pavements</h3>
               <p>Pothole repair, bitumen cave-ins, sidewalk obstructions, and street trenching.</p>
               <span className="service-sla-tag">SLA: 6 to 48 Hours</span>
             </div>
 
-            <div className="service-portal-card" onClick={() => navigateTo("citizen-dashboard")}>
+            <div className="service-portal-card" onClick={citizenActionTarget}>
               <div className="service-card-icon water-icon">💧</div>
               <h3>Water Supply & Drainage</h3>
               <p>Pipeline burst, low water pressure, contaminated supply, and stormwater drain clogging.</p>
               <span className="service-sla-tag">SLA: 4 to 24 Hours</span>
             </div>
 
-            <div className="service-portal-card" onClick={() => navigateTo("citizen-dashboard")}>
+            <div className="service-portal-card" onClick={citizenActionTarget}>
               <div className="service-card-icon power-icon">⚡</div>
               <h3>Electricity & Streetlights</h3>
               <p>Transformer sparking, overhead cable hazards, non-functional streetlights, and power fluctuation.</p>
               <span className="service-sla-tag">SLA: 2 to 12 Hours</span>
             </div>
 
-            <div className="service-portal-card" onClick={() => navigateTo("citizen-dashboard")}>
+            <div className="service-portal-card" onClick={citizenActionTarget}>
               <div className="service-card-icon waste-icon">🗑️</div>
               <h3>Solid Waste & Sanitation</h3>
               <p>Garbage overflow, illegal dumping, public bio-waste clearance, and fogging/sanitation.</p>
