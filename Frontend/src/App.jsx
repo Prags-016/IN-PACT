@@ -106,7 +106,7 @@ function App() {
 
       {/* Main Page Routing */}
       <main className="main-content">
-        {currentPage === "home" && <Home navigateTo={navigateTo} />}
+        {currentPage === "home" && <Home navigateTo={navigateTo} currentUser={currentUser} />}
 
         {currentPage === "citizen-login" && (
           <CitizenLogin onLogin={handleLogin} navigateTo={navigateTo} />
